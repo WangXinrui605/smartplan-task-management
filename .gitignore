@@ -36,4 +36,7 @@ static/
 .env.production.local
 
 task/templates/task
+note.markdown
+
+.idea/
 
