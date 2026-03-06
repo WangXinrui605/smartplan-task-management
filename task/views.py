@@ -1,36 +1,35 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
-from .models import Task, Category, Priority
+from .models import Task, Category
 from datetime import date
+from django.utils import timezone
 
 
-# 测试用：固定使用testuser（替代用户登录）
-def get_test_user():
+def get_current_user(request):
     return User.objects.get(username='testuser')
 
 
 # 1. 任务仪表盘（只负责任务列表和操作）
 def task_dashboard(request):
-    user = get_test_user()#获取用户
+    user = get_current_user(request)#获取用户
 
     """处理排序（下拉框传的sort）"""
     sort_by = request.GET.get('sort', 'due_date')#默认按截止日期排序
 
     if sort_by == 'priority':
-        tasks = Task.objects.filter(user=user).order_by('-priority__rank_order')#优先级
+        tasks = Task.objects.filter(user=user).order_by('-priority')#优先级
     elif sort_by == 'created_at':
         tasks = Task.objects.filter(user=user).order_by('-created_at')#创建时间
     else:
         tasks = Task.objects.filter(user=user).order_by('due_date')#截止日期
 
     categories = Category.objects.all()
-    priorities = Priority.objects.all()
+
 
 #模板需要的数据
     context = {
         'tasks': tasks,
         'categories': categories,
-        'priorities': priorities,
         'current_sort': sort_by
     }
     return render(request, 'task/dashboard.html', context)
@@ -38,7 +37,7 @@ def task_dashboard(request):
 
 # 2. 统计页面（只负责统计数据）
 def stats_page(request):
-    user = get_test_user()
+    user = get_current_user(request)
     # 第一步：查询当前用户的所有任务
     tasks = Task.objects.filter(user=user)
     # 第二步：计算统计数据
@@ -59,10 +58,15 @@ def stats_page(request):
 
     # 按优先级统计
     priority_stats = []
-    for prio in Priority.objects.all().order_by('-rank_order'):
-        prio_tasks = tasks.filter(priority=prio)
+    priority_choices = [
+        ('high', 'High'),
+        ('medium', 'Medium'),
+        ('low', 'Low'),
+    ]
+    for value, label in priority_choices:
+        prio_tasks = tasks.filter(priority=value)
         priority_stats.append({
-            'level': prio.level,
+            'level': label,
             'count': prio_tasks.count(),
             'completed': prio_tasks.filter(status=True).count()
         })
@@ -79,9 +83,8 @@ def stats_page(request):
 
 # 3. 创建任务
 def create_task(request):
-    user = get_test_user()
+    user = get_current_user(request)
     categories = Category.objects.all()
-    priorities = Priority.objects.all()
     errors = []
     # 第一步：处理POST请求（用户提交表单）
     if request.method == 'POST':
@@ -90,7 +93,7 @@ def create_task(request):
         description = request.POST.get('description')
         due_date = request.POST.get('due_date')
         category_id = request.POST.get('category')
-        priority_id = request.POST.get('priority')
+        priority = request.POST.get('priority','medium')
 
         # 表单验证（M4需求）
         if not title:
@@ -101,12 +104,11 @@ def create_task(request):
         if not errors:
             # 创建任务
             category = Category.objects.get(id=category_id) if category_id else None
-            priority = Priority.objects.get(id=priority_id) if priority_id else None
             Task.objects.create(
                 user=user,
                 title=title,
                 description=description,
-                due_date=due_date,
+                due_date=due_date if due_date else None,
                 category=category,
                 priority=priority
             )
@@ -114,7 +116,6 @@ def create_task(request):
 
     context = {
         'categories': categories,
-        'priorities': priorities,
         'errors': errors
     }
     return render(request, 'task/create_task.html', context)
@@ -122,10 +123,9 @@ def create_task(request):
 
 # 4. 编辑任务
 def edit_task(request, task_id):
-    user = get_test_user()
+    user = get_current_user(request)
     task = get_object_or_404(Task, id=task_id, user=user)  # 确保任务属于当前用户
     categories = Category.objects.all()
-    priorities = Priority.objects.all()
     errors = []
 
     if request.method == 'POST':
@@ -134,7 +134,7 @@ def edit_task(request, task_id):
         description = request.POST.get('description')
         due_date = request.POST.get('due_date')
         category_id = request.POST.get('category')
-        priority_id = request.POST.get('priority')
+        priority = request.POST.get('priority','medium')
         status = request.POST.get('status') == 'on'  # 复选框值处理
 
         # 表单验证
@@ -147,20 +147,21 @@ def edit_task(request, task_id):
             # 更新任务
             task.title = title
             task.description = description
-            task.due_date = due_date
+            task.due_date = due_date if due_date else None
             task.category = Category.objects.get(id=category_id) if category_id else None
-            task.priority = Priority.objects.get(id=priority_id) if priority_id else None
+            task.priority = priority
             task.status = status
-            # 如果标记为完成，设置completed_at（简化：用当前日期）
+            # 如果标记为完成，设置completed_at
             if status and not task.completed_at:
-                task.completed_at = date.today()
+                task.completed_at = timezone.now()
+            elif not status:#如果用户把一个已完成任务改回未完成，completed_at 应该清空
+                task.completed_at = None
             task.save()
             return redirect('task_dashboard')
 
     context = {
         'task': task,
         'categories': categories,
-        'priorities': priorities,
         'errors': errors
     }
     return render(request, 'task/edit_task.html', context)
@@ -168,7 +169,7 @@ def edit_task(request, task_id):
 
 # 5. 删除任务
 def delete_task(request, task_id):
-    user = get_test_user()
+    user = get_current_user(request)
     task = get_object_or_404(Task, id=task_id, user=user)
     task.delete()#删除任务
     return redirect('task_dashboard')#重定向到仪表盘
@@ -176,11 +177,10 @@ def delete_task(request, task_id):
 
 # 6. 切换任务状态
 def toggle_task_status(request, task_id):
-    user = get_test_user()
+    user = get_current_user(request)
     task = get_object_or_404(Task, id=task_id, user=user)
     task.status = not task.status
-    # 简化：完成时间设为今天，未完成则清空
-    task.completed_at = date.today() if task.status else None
+    task.completed_at = timezone.now() if task.status else None
     task.save()
     return redirect('task_dashboard')
 

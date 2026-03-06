@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Category, Priority, Task
+from .models import Category, Task
 
 # 自定义Task Admin，方便管理任务
 class TaskAdmin(admin.ModelAdmin):
@@ -9,5 +9,4 @@ class TaskAdmin(admin.ModelAdmin):
 
 # 注册模型到Admin
 admin.site.register(Category)
-admin.site.register(Priority)
 admin.site.register(Task, TaskAdmin)
