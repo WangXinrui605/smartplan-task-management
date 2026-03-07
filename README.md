@@ -5,8 +5,8 @@ A simple Django-based task management application with core features for task tr
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/WangXinrui605/your-repo-name.git
-cd your-repo-name
+git clone https://github.com/WangXinrui605/smartplan-task-management.git
+cd smartplan-task-management
 ```
 
 ### 2. Set Up the Environment (Windows)
