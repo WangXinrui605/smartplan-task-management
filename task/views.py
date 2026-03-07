@@ -30,7 +30,8 @@ def task_dashboard(request):
     context = {
         'tasks': tasks,
         'categories': categories,
-        'current_sort': sort_by
+        'current_sort': sort_by,
+        'user': user
     }
     return render(request, 'task/dashboard.html', context)
 
@@ -76,7 +77,8 @@ def stats_page(request):
         'completed_tasks': completed_tasks,
         'completion_rate': round(completion_rate, 1),# 保留1位小数
         'category_stats': category_stats,
-        'priority_stats': priority_stats
+        'priority_stats': priority_stats,
+        'user': user
     }
     return render(request, 'task/stats.html', context)
 
@@ -116,7 +118,8 @@ def create_task(request):
 
     context = {
         'categories': categories,
-        'errors': errors
+        'errors': errors,
+        'user': user
     }
     return render(request, 'task/create_task.html', context)
 
@@ -162,7 +165,8 @@ def edit_task(request, task_id):
     context = {
         'task': task,
         'categories': categories,
-        'errors': errors
+        'errors': errors,
+        'user': user
     }
     return render(request, 'task/edit_task.html', context)
 

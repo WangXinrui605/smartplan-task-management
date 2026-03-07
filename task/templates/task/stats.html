@@ -1,0 +1,59 @@
+{% extends 'task/base.html' %}
+
+{% block title %}SmartPlan - Statistics{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Statistics</h2>
+    <p>Track progress across all tasks, categories, and priority levels.</p>
+</div>
+
+<div class="stats">
+    <div class="stat-card">
+        <h3>Total Tasks</h3>
+        <p>{{ total_tasks }}</p>
+    </div>
+    <div class="stat-card">
+        <h3>Completed Tasks</h3>
+        <p>{{ completed_tasks }}</p>
+    </div>
+    <div class="stat-card">
+        <h3>Completion Rate</h3>
+        <p>{{ completion_rate }}%</p>
+    </div>
+</div>
+
+<div class="content-card">
+    <h3>Tasks by Category</h3>
+    <table class="task-table">
+        <tr>
+            <th>Category</th>
+            <th>Total Tasks</th>
+            <th>Completed</th>
+        </tr>
+        {% for stat in category_stats %}
+        <tr>
+            <td>{{ stat.name }}</td>
+            <td>{{ stat.count }}</td>
+            <td>{{ stat.completed }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h3 class="section-title">Tasks by Priority</h3>
+    <table class="task-table">
+        <tr>
+            <th>Priority</th>
+            <th>Total Tasks</th>
+            <th>Completed</th>
+        </tr>
+        {% for stat in priority_stats %}
+        <tr>
+            <td>{{ stat.level }}</td>
+            <td>{{ stat.count }}</td>
+            <td>{{ stat.completed }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}

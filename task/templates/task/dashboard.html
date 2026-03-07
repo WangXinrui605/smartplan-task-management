@@ -1,0 +1,68 @@
+{% extends 'task/base.html' %}
+
+{% block title %}SmartPlan - Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Task Dashboard</h2>
+    <p>View, organise, and manage all your current tasks in one place.</p>
+</div>
+
+<div class="content-card">
+    <div class="filter-bar">
+        <div>
+            <label for="sort">Sort tasks by</label>
+            <select id="sort" onchange="window.location.href='?sort='+this.value">
+                <option value="due_date" {% if current_sort == 'due_date' %}selected{% endif %}>Due Date</option>
+                <option value="priority" {% if current_sort == 'priority' %}selected{% endif %}>Priority</option>
+                <option value="created_at" {% if current_sort == 'created_at' %}selected{% endif %}>Created Time</option>
+            </select>
+        </div>
+
+        <div class="inline-actions">
+            <a href="{% url 'create_task' %}" class="btn btn-primary">+ Add New Task</a>
+            <a href="{% url 'stats_page' %}" class="btn btn-secondary">View Statistics</a>
+        </div>
+    </div>
+
+    <table class="task-table">
+        <thead>
+            <tr>
+                <th>Status</th>
+                <th>Task Title</th>
+                <th>Category</th>
+                <th>Priority</th>
+                <th>Due Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% if tasks %}
+            {% for task in tasks %}
+                <tr>
+                    <td>
+                        <a href="{% url 'toggle_task_status' task.id %}" aria-label="Toggle task status">
+                            {% if task.status %}✓ Completed{% else %}□ Incomplete{% endif %}
+                        </a>
+                    </td>
+                    <td>{{ task.title }}</td>
+                    <td>{{ task.category.name|default:"None" }}</td>
+                    <td>{{ task.get_priority_display }}</td>
+                    <td>{{ task.due_date|date:"M d, Y"|default:"None" }}</td>
+                    <td>
+                        <div class="inline-actions">
+                            <a href="{% url 'edit_task' task.id %}" class="btn btn-secondary">Edit</a>
+                            <a href="{% url 'delete_task' task.id %}" class="btn btn-danger" onclick="return confirm('Confirm delete?')">Delete</a>
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+        {% else %}
+            <tr>
+                <td colspan="6" style="text-align:center;">No tasks yet. Click “Add New Task” to create your first task.</td>
+            </tr>
+        {% endif %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

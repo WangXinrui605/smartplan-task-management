@@ -35,7 +35,6 @@ static/
 .env.test.local
 .env.production.local
 
-task/templates/task
 note.markdown
 
 .idea/
