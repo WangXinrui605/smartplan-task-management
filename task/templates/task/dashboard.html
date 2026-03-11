@@ -9,21 +9,69 @@
 </div>
 
 <div class="content-card">
-    <div class="filter-bar">
-        <div>
-            <label for="sort">Sort tasks by</label>
-            <select id="sort" onchange="window.location.href='?sort='+this.value">
-                <option value="due_date" {% if current_sort == 'due_date' %}selected{% endif %}>Due Date</option>
-                <option value="priority" {% if current_sort == 'priority' %}selected{% endif %}>Priority</option>
-                <option value="created_at" {% if current_sort == 'created_at' %}selected{% endif %}>Created Time</option>
-            </select>
+    <form method="get" class="filter-bar">
+        <div class="inline-actions" style="display:flex; gap:16px; flex-wrap:wrap; align-items:end;">
+            <div>
+                <label for="q">Search tasks</label>
+                <input
+                    type="search"
+                    id="q"
+                    name="q"
+                    value="{{ current_query }}"
+                    placeholder="Search by title or description"
+                    style="min-width:260px;"
+                >
+            </div>
+
+            <div>
+                <label for="sort">Sort tasks by</label>
+                <select id="sort" name="sort">
+                    <option value="due_date" {% if current_sort == 'due_date' %}selected{% endif %}>Due Date</option>
+                    <option value="priority" {% if current_sort == 'priority' %}selected{% endif %}>Priority</option>
+                    <option value="created_at" {% if current_sort == 'created_at' %}selected{% endif %}>Created Time</option>
+                </select>
+            </div>
+
+            <!-- 保留当前 period，不然点 Apply 会丢失标签页状态 -->
+            <input type="hidden" name="period" value="{{ current_period }}">
+
+            <div>
+                <label>&nbsp;</label>
+                <button type="submit" class="btn btn-secondary">Apply</button>
+            </div>
         </div>
 
         <div class="inline-actions">
             <a href="{% url 'create_task' %}" class="btn btn-primary">+ Add New Task</a>
             <a href="{% url 'stats_page' %}" class="btn btn-secondary">View Statistics</a>
         </div>
+    </form>
+</div>
+
+<div class="content-card" style="margin-top:24px;">
+    <div class="inline-actions" style="margin-bottom:18px;">
+        <a href="?period=all&sort={{ current_sort }}&q={{ current_query }}"
+           class="btn {% if current_period == 'all' %}btn-primary{% else %}btn-secondary{% endif %}">
+            All
+        </a>
+
+        <a href="?period=today&sort={{ current_sort }}&q={{ current_query }}"
+           class="btn {% if current_period == 'today' %}btn-primary{% else %}btn-secondary{% endif %}">
+            Today
+        </a>
+
+        <a href="?period=future&sort={{ current_sort }}&q={{ current_query }}"
+           class="btn {% if current_period == 'future' %}btn-primary{% else %}btn-secondary{% endif %}">
+            Future
+        </a>
+
+        <a href="?period=history&sort={{ current_sort }}&q={{ current_query }}"
+           class="btn {% if current_period == 'history' %}btn-primary{% else %}btn-secondary{% endif %}">
+            History
+        </a>
     </div>
+
+    <h3 style="margin-top:0;">{{ period_title }}</h3>
 
     <table class="task-table">
         <thead>
@@ -49,14 +97,14 @@
                     <td>{{ task.title }}</td>
                     <td>
                         {% if task.note %}
-                        <a href="javascript:void(0)"
-                        class="note-link"
-                        data-title="{{ task.title }}"
-                        data-note="{{ task.note|escapejs }}">
-                        {{ task.note|truncatechars:20 }}
-                        </a>
+                            <a href="javascript:void(0)"
+                               class="note-link"
+                               data-title="{{ task.title }}"
+                               data-note="{{ task.note|escapejs }}">
+                                {{ task.note|truncatechars:20 }}
+                            </a>
                         {% else %}
-                        <span style="color:gray;">No note</span>
+                            <span style="color:gray;">No note</span>
                         {% endif %}
                     </td>
                     <td>{{ task.category.name|default:"None" }}</td>
@@ -72,52 +120,42 @@
             {% endfor %}
         {% else %}
             <tr>
-                <td colspan="6" style="text-align:center;">No tasks yet. Click “Add New Task” to create your first task.</td>
+                <td colspan="7" style="text-align:center;">No tasks found in this section.</td>
             </tr>
         {% endif %}
         </tbody>
     </table>
 </div>
 
-    <div id="noteModal" style="display:none; position:fixed; top:0; left:0;
-    width:100%; height:100%; background:rgba(0,0,0,0.5);">
-
+<div id="noteModal" style="display:none; position:fixed; top:0; left:0;
+width:100%; height:100%; background:rgba(0,0,0,0.5);">
     <div style="background:white; width:500px; margin:10% auto;
     padding:20px; border-radius:8px;">
-
-    <h3 id="modalTitle"></h3>
-
-    <p id="modalContent" style="white-space: pre-wrap;"></p>
-
-    <button onclick="closeModal()">Close</button>
-
+        <h3 id="modalTitle"></h3>
+        <p id="modalContent" style="white-space: pre-wrap;"></p>
+        <button onclick="closeModal()">Close</button>
     </div>
-    </div>
+</div>
 
-    <script>
-    document.querySelectorAll('.note-link').forEach(link => {
+<script>
+document.querySelectorAll('.note-link').forEach(link => {
+    link.addEventListener('click', function () {
+        const title = this.dataset.title;
+        const rawNote = this.dataset.note;
 
-        link.addEventListener('click', function () {
+        const formattedNote = rawNote
+            .replace(/\\u000D\\u000A/g, '\n')
+            .replace(/\\u000A/g, '\n')
+            .replace(/\\u000D/g, '\n');
 
-            const title = this.dataset.title;
-            const rawNote = this.dataset.note;
-
-            const formattedNote = rawNote
-                .replace(/\\u000D\\u000A/g, '\n')
-                .replace(/\\u000A/g, '\n')
-                .replace(/\\u000D/g, '\n');
-
-            document.getElementById('modalTitle').innerText = title;
-            document.getElementById('modalContent').innerText = formattedNote;
-
-            document.getElementById('noteModal').style.display = "block";
-
-        });
-
+        document.getElementById('modalTitle').innerText = title;
+        document.getElementById('modalContent').innerText = formattedNote;
+        document.getElementById('noteModal').style.display = "block";
     });
+});
 
-    function closeModal(){
-        document.getElementById('noteModal').style.display = "none";
-    }
-    </script>
+function closeModal() {
+    document.getElementById('noteModal').style.display = "none";
+}
+</script>
 {% endblock %}
