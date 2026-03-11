@@ -5,55 +5,159 @@
 {% block content %}
 <div class="page-header">
     <h2>Statistics</h2>
-    <p>Track progress across all tasks, categories, and priority levels.</p>
+    <p>Track progress across all tasks with different time ranges.</p>
+</div>
+
+<div class="content-card" style="margin-bottom:24px;">
+    <div class="inline-actions" style="margin-bottom:20px;">
+        <a href="?range=week"
+           class="btn {% if range_filter == 'week' %}btn-primary{% else %}btn-secondary{% endif %}">
+            This Week
+        </a>
+
+        <a href="?range=month"
+           class="btn {% if range_filter == 'month' %}btn-primary{% else %}btn-secondary{% endif %}">
+            This Month
+        </a>
+
+        <a href="?range=all"
+           class="btn {% if range_filter == 'all' %}btn-primary{% else %}btn-secondary{% endif %}">
+            All Time
+        </a>
+    </div>
+
+    <p style="margin:0; color:#6b7280;">
+        Showing statistics for: <strong>{{ range_label }}</strong>
+    </p>
 </div>
 
 <div class="stats">
-    <div class="stat-card">
+    <div class="stat-card" style="border-top: 5px solid #3b82f6;">
         <h3>Total Tasks</h3>
         <p>{{ total_tasks }}</p>
     </div>
-    <div class="stat-card">
+    <div class="stat-card" style="border-top: 5px solid #10b981;">
         <h3>Completed Tasks</h3>
         <p>{{ completed_tasks }}</p>
     </div>
-    <div class="stat-card">
+    <div class="stat-card" style="border-top: 5px solid #f59e0b;">
         <h3>Completion Rate</h3>
         <p>{{ completion_rate }}%</p>
     </div>
 </div>
 
-<div class="content-card">
-    <h3>Tasks by Category</h3>
-    <table class="task-table">
-        <tr>
-            <th>Category</th>
-            <th>Total Tasks</th>
-            <th>Completed</th>
-        </tr>
-        {% for stat in category_stats %}
-        <tr>
-            <td>{{ stat.name }}</td>
-            <td>{{ stat.count }}</td>
-            <td>{{ stat.completed }}</td>
-        </tr>
-        {% endfor %}
-    </table>
+<div style="display:grid; grid-template-columns: 1fr 1fr; gap:24px;">
+    <!-- Donut Chart -->
+    <div class="content-card">
+        <h3 style="margin-top:0;">Task Completion Status</h3>
 
-    <h3 class="section-title">Tasks by Priority</h3>
-    <table class="task-table">
-        <tr>
-            <th>Priority</th>
-            <th>Total Tasks</th>
-            <th>Completed</th>
-        </tr>
-        {% for stat in priority_stats %}
-        <tr>
-            <td>{{ stat.level }}</td>
-            <td>{{ stat.count }}</td>
-            <td>{{ stat.completed }}</td>
-        </tr>
-        {% endfor %}
-    </table>
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:24px; flex-wrap:wrap; margin-top:16px;">
+            <div
+                style="
+                    width:240px;
+                    height:240px;
+                    border-radius:50%;
+                    background:
+                        conic-gradient(
+                            #10b981 0% {{ completed_pct }}%,
+                            #ef4444 {{ completed_pct }}% 100%
+                        );
+                    position:relative;
+                    margin:10px auto;
+                    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+                ">
+                <div
+                    style="
+                        position:absolute;
+                        width:110px;
+                        height:110px;
+                        background:#ffffff;
+                        border-radius:50%;
+                        top:50%;
+                        left:50%;
+                        transform:translate(-50%, -50%);
+                        display:flex;
+                        align-items:center;
+                        justify-content:center;
+                        flex-direction:column;
+                        text-align:center;
+                    ">
+                    <span style="font-size:14px; color:#6b7280;">Done</span>
+                    <strong style="font-size:22px; color:#111827;">{{ completion_rate }}%</strong>
+                </div>
+            </div>
+
+            <div style="flex:1; min-width:200px;">
+                <div style="display:flex; align-items:center; margin-bottom:16px; font-size:18px;">
+                    <span style="display:inline-block; width:18px; height:18px; background:#10b981; border-radius:4px; margin-right:12px;"></span>
+                    <span><strong>Completed:</strong> {{ completed_tasks }}</span>
+                </div>
+
+                <div style="display:flex; align-items:center; margin-bottom:16px; font-size:18px;">
+                    <span style="display:inline-block; width:18px; height:18px; background:#ef4444; border-radius:4px; margin-right:12px;"></span>
+                    <span><strong>Pending:</strong> {{ incomplete_tasks }}</span>
+                </div>
+
+                <div style="margin-top:18px; padding:14px 16px; background:#f9fafb; border-radius:12px; border:1px solid #e5e7eb;">
+                    <p style="margin:0; color:#6b7280; font-size:14px;">Completion overview</p>
+                    <p style="margin:6px 0 0; font-size:20px; font-weight:700;">{{ completed_tasks }} / {{ total_tasks }} tasks done</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Colorful Bar Chart -->
+    <div class="content-card">
+        <h3 style="margin-top:0;">Task Category Distribution</h3>
+
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:24px; height:290px; margin-top:20px;">
+            {% for stat in category_stats %}
+            <div style="flex:1; text-align:center;">
+                <div style="height:200px; display:flex; align-items:flex-end; justify-content:center;">
+                    <div
+                        title="{{ stat.name }}: {{ stat.count }} tasks"
+                        style="
+                            width:80px;
+                            height:{% if stat.height_pct > 0 %}{{ stat.height_pct }}{% else %}0{% endif %}%;
+                            min-height:{% if stat.count > 0 %}22px{% else %}0{% endif %};
+                            {% if stat.name == 'Study' %}
+                                background: linear-gradient(180deg, #60a5fa 0%, #2563eb 100%);
+                            {% elif stat.name == 'Work' %}
+                                background: linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%);
+                            {% elif stat.name == 'Life' %}
+                                background: linear-gradient(180deg, #34d399 0%, #10b981 100%);
+                            {% else %}
+                                background: linear-gradient(180deg, #c084fc 0%, #8b5cf6 100%);
+                            {% endif %}
+                            border-radius: 14px 14px 0 0;
+                            box-shadow: 0 8px 18px rgba(0,0,0,0.10);
+                            transition: transform 0.2s ease;
+                        "
+                        onmouseover="this.style.transform='translateY(-4px)'"
+                        onmouseout="this.style.transform='translateY(0)'">
+                    </div>
+                </div>
+
+                <div style="margin-top:12px; font-weight:700; font-size:18px;">{{ stat.name }}</div>
+                <div style="color:#6b7280; font-size:15px;">{{ stat.count }} tasks</div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div style="display:flex; gap:20px; flex-wrap:wrap; margin-top:24px; font-size:15px;">
+            <div style="display:flex; align-items:center;">
+                <span style="width:16px; height:16px; background:#2563eb; border-radius:4px; display:inline-block; margin-right:8px;"></span>
+                Study
+            </div>
+            <div style="display:flex; align-items:center;">
+                <span style="width:16px; height:16px; background:#f59e0b; border-radius:4px; display:inline-block; margin-right:8px;"></span>
+                Work
+            </div>
+            <div style="display:flex; align-items:center;">
+                <span style="width:16px; height:16px; background:#10b981; border-radius:4px; display:inline-block; margin-right:8px;"></span>
+                Life
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

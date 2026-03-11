@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
 from .models import Task, Category
-from datetime import date
+from datetime import date, datetime, timedelta
 from django.utils import timezone
 from django.db.models import Q
 
@@ -66,49 +66,75 @@ def task_dashboard(request):
 # 2. 统计页面（只负责统计数据）
 def stats_page(request):
     user = get_current_user(request)
+
+    range_filter = request.GET.get('range', 'all')  # week / month / all
+    today = timezone.localdate()
+
     # 第一步：查询当前用户的所有任务
     tasks = Task.objects.filter(user=user)
+
+    # 按时间范围筛选（这里先按 created_at 来算）
+    if range_filter == 'week':
+        start_date = today - timedelta(days=today.weekday())  # 本周周一
+        tasks = tasks.filter(created_at__date__gte=start_date)
+        range_label = 'This Week'
+    elif range_filter == 'month':
+        start_date = today.replace(day=1)  # 本月1号
+        tasks = tasks.filter(created_at__date__gte=start_date)
+        range_label = 'This Month'
+    else:
+        range_label = 'All Time'
+
     # 第二步：计算统计数据
     total_tasks = tasks.count()#总任务数
     completed_tasks = tasks.filter(status=True).count()#已完成任务数
+    incomplete_tasks = total_tasks - completed_tasks
     #完成率
     completion_rate = (completed_tasks / total_tasks) * 100 if total_tasks > 0 else 0
+    completed_pct=round(completion_rate)
+    pending_pct=100 - completed_pct if total_tasks > 0 else 0
 
-    # 按分类统计
+    # 分类统计（柱状图）
     category_stats = []
-    for cat in Category.objects.all():
-        cat_tasks = tasks.filter(category=cat)
-        category_stats.append({
-            'name': cat.name,
-            'count': cat_tasks.count(),
-            'completed': cat_tasks.filter(status=True).count()
-        })
+    categories = Category.objects.all()
 
-    # 按优先级统计
-    priority_stats = []
-    priority_choices = [
-        ('high', 'High'),
-        ('medium', 'Medium'),
-        ('low', 'Low'),
-    ]
-    for value, label in priority_choices:
-        prio_tasks = tasks.filter(priority=value)
-        priority_stats.append({
-            'level': label,
-            'count': prio_tasks.count(),
-            'completed': prio_tasks.filter(status=True).count()
+    max_category_count = 0
+    temp_stats = []
+
+    for cat in categories:
+        count = tasks.filter(category=cat).count()
+        temp_stats.append({
+            'name': cat.name,
+            'count': count,
+        })
+        if count > max_category_count:
+            max_category_count = count
+
+    for stat in temp_stats:
+        if max_category_count > 0:
+            height_pct = int((stat['count'] / max_category_count) * 100)
+        else:
+            height_pct = 0
+
+        category_stats.append({
+            'name': stat['name'],
+            'count': stat['count'],
+            'height_pct': height_pct
         })
     # 第三步：准备模板数据
     context = {
+        'range_filter': range_filter,
+        'range_label': range_label,
         'total_tasks': total_tasks,
         'completed_tasks': completed_tasks,
+        'incomplete_tasks': incomplete_tasks,
         'completion_rate': round(completion_rate, 1),# 保留1位小数
+        'completed_pct': completed_pct,
+        'pending_pct': pending_pct,
         'category_stats': category_stats,
-        'priority_stats': priority_stats,
         'user': user
     }
     return render(request, 'task/stats.html', context)
-
 
 # 3. 创建任务
 def create_task(request):
