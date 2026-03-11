@@ -40,6 +40,7 @@ class Task(models.Model):
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True,blank=True)  # 关联分类
     priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default='medium')  # 关联优先级
     status = models.BooleanField(default=False)  # 完成状态（默认未完成）
+    note = models.TextField(blank=True, null=True) #note preview非必填，允许为空
 
     def __str__(self):
         return self.title  # Admin显示任务标题

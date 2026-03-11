@@ -96,6 +96,7 @@ def create_task(request):
         due_date = request.POST.get('due_date')
         category_id = request.POST.get('category')
         priority = request.POST.get('priority','medium')
+        note=request.POST.get('note')
 
         # 表单验证（M4需求）
         if not title:
@@ -112,7 +113,8 @@ def create_task(request):
                 description=description,
                 due_date=due_date if due_date else None,
                 category=category,
-                priority=priority
+                priority=priority,
+                note=note
             )
             return redirect('task_dashboard')  # 跳转回仪表盘
 
@@ -139,6 +141,7 @@ def edit_task(request, task_id):
         category_id = request.POST.get('category')
         priority = request.POST.get('priority','medium')
         status = request.POST.get('status') == 'on'  # 复选框值处理
+        note = request.POST.get('note')
 
         # 表单验证
         if not title:
@@ -154,6 +157,7 @@ def edit_task(request, task_id):
             task.category = Category.objects.get(id=category_id) if category_id else None
             task.priority = priority
             task.status = status
+            task.note = note
             # 如果标记为完成，设置completed_at
             if status and not task.completed_at:
                 task.completed_at = timezone.now()
