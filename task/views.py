@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from .models import Task, Category
 from datetime import date
 from django.utils import timezone
+from django.db.models import Q
 
 
 def get_current_user(request):
@@ -15,13 +16,36 @@ def task_dashboard(request):
 
     """处理排序（下拉框传的sort）"""
     sort_by = request.GET.get('sort', 'due_date')#默认按截止日期排序
+    query = request.GET.get('q', '').strip()
+    period = request.GET.get('period', 'all')
+
+    tasks = Task.objects.filter(user=user)
+
+    # search: title or contains key word
+    if query:
+        tasks= tasks.filter(Q(title__icontains=query) | Q(description__icontains=query))
 
     if sort_by == 'priority':
-        tasks = Task.objects.filter(user=user).order_by('-priority')#优先级
+        tasks = tasks.order_by('-priority')#优先级
     elif sort_by == 'created_at':
-        tasks = Task.objects.filter(user=user).order_by('-created_at')#创建时间
+        tasks = tasks.order_by('-created_at')#创建时间
     else:
-        tasks = Task.objects.filter(user=user).order_by('due_date')#截止日期
+        tasks = tasks.order_by('due_date')#截止日期
+
+    today = timezone.localdate()
+
+    # 根据 period 决定当前表格显示哪些任务
+    if period == 'today':
+        tasks = tasks.filter(due_date=today, status=False)
+        period_title = 'Today'
+    elif period == 'future':
+        tasks = tasks.filter(due_date__gt=today, status=False)
+        period_title = 'Future'
+    elif period == 'history':
+        tasks = tasks.filter(Q(status=True) | Q(due_date__lt=today))
+        period_title = 'History'
+    else:
+        period_title = 'All Tasks'
 
     categories = Category.objects.all()
 
@@ -31,6 +55,9 @@ def task_dashboard(request):
         'tasks': tasks,
         'categories': categories,
         'current_sort': sort_by,
+        'current_query': query,
+        'current_period': period,
+        'period_title': period_title,
         'user': user
     }
     return render(request, 'task/dashboard.html', context)
