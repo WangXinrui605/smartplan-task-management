@@ -108,7 +108,11 @@
                         {% endif %}
                     </td>
                     <td>{{ task.category.name|default:"None" }}</td>
-                    <td>{{ task.get_priority_display }}</td>
+                    <td>
+                        <span class="priority-badge priority-{{ task.priority }}">
+                            {{ task.get_priority_display }}
+                        </span>
+                    </td>
                     <td>{{ task.due_date|date:"M d, Y"|default:"None" }}</td>
                     <td>
                         <div class="inline-actions">

@@ -4,6 +4,7 @@ from .models import Task, Category
 from datetime import date, datetime, timedelta
 from django.utils import timezone
 from django.db.models import Q
+from django.db.models import Case, When, IntegerField
 
 
 def get_current_user(request):
@@ -26,7 +27,15 @@ def task_dashboard(request):
         tasks= tasks.filter(Q(title__icontains=query) | Q(description__icontains=query))
 
     if sort_by == 'priority':
-        tasks = tasks.order_by('-priority')#优先级
+        tasks = tasks.annotate(
+            priority_order=Case(
+                When(priority='high', then=3),
+                When(priority='medium', then=2),
+                When(priority='low', then=1),
+                default=0,
+                output_field=IntegerField()
+            )
+        ).order_by('-priority_order')#优先级
     elif sort_by == 'created_at':
         tasks = tasks.order_by('-created_at')#创建时间
     else:
@@ -146,7 +155,7 @@ def create_task(request):
         # 获取表单数据
         title = request.POST.get('title')
         description = request.POST.get('description')
-        due_date = request.POST.get('due_date')
+        due_date = request.POST.get('due_date') or None
         category_id = request.POST.get('category')
         priority = request.POST.get('priority','medium')
         note=request.POST.get('note')
@@ -159,7 +168,7 @@ def create_task(request):
 
         if not errors:
             # 创建任务
-            category = Category.objects.get(id=category_id) if category_id else None
+            category = Category.objects.filter(id=category_id).first() if category_id else None
             Task.objects.create(
                 user=user,
                 title=title,
@@ -207,7 +216,7 @@ def edit_task(request, task_id):
             task.title = title
             task.description = description
             task.due_date = due_date if due_date else None
-            task.category = Category.objects.get(id=category_id) if category_id else None
+            task.category = Category.objects.filter(id=category_id).first() if category_id else None
             task.priority = priority
             task.status = status
             task.note = note
