@@ -1,19 +1,57 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
+from django.contrib.auth import login, logout
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.decorators import login_required
 from .models import Task, Category
 from datetime import date, datetime, timedelta
 from django.utils import timezone
 from django.db.models import Q
 from django.db.models import Case, When, IntegerField
 
+def register_view(request):
+    if request.user.is_authenticated:
+        return redirect('task_dashboard')
+
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect('task_dashboard')
+    else:
+        form = UserCreationForm()
+
+    return render(request, 'task/register.html', {'form': form})
+
+
+def login_view(request):
+    if request.user.is_authenticated:
+        return redirect('task_dashboard')
+
+    if request.method == 'POST':
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            login(request, form.get_user())
+            return redirect('task_dashboard')
+    else:
+        form = AuthenticationForm()
+
+    return render(request, 'task/login.html', {'form': form})
+
+
+def logout_view(request):
+    logout(request)
+    return redirect('login')
 
 def get_current_user(request):
     return User.objects.get(username='testuser')
 
 
 # 1. 任务仪表盘（只负责任务列表和操作）
+@login_required
 def task_dashboard(request):
-    user = get_current_user(request)#获取用户
+    user = request.user
 
     """处理排序（下拉框传的sort）"""
     sort_by = request.GET.get('sort', 'due_date')#默认按截止日期排序
@@ -73,8 +111,9 @@ def task_dashboard(request):
 
 
 # 2. 统计页面（只负责统计数据）
+@login_required
 def stats_page(request):
-    user = get_current_user(request)
+    user = request.user
 
     range_filter = request.GET.get('range', 'all')  # week / month / all
     today = timezone.localdate()
@@ -146,8 +185,9 @@ def stats_page(request):
     return render(request, 'task/stats.html', context)
 
 # 3. 创建任务
+@login_required
 def create_task(request):
-    user = get_current_user(request)
+    user = request.user
     categories = Category.objects.all()
     errors = []
     # 第一步：处理POST请求（用户提交表单）
@@ -189,8 +229,9 @@ def create_task(request):
 
 
 # 4. 编辑任务
+@login_required
 def edit_task(request, task_id):
-    user = get_current_user(request)
+    user = request.user
     task = get_object_or_404(Task, id=task_id, user=user)  # 确保任务属于当前用户
     categories = Category.objects.all()
     errors = []
@@ -238,16 +279,18 @@ def edit_task(request, task_id):
 
 
 # 5. 删除任务
+@login_required
 def delete_task(request, task_id):
-    user = get_current_user(request)
+    user = request.user
     task = get_object_or_404(Task, id=task_id, user=user)
     task.delete()#删除任务
     return redirect('task_dashboard')#重定向到仪表盘
 
 
 # 6. 切换任务状态
+@login_required
 def toggle_task_status(request, task_id):
-    user = get_current_user(request)
+    user = request.user
     task = get_object_or_404(Task, id=task_id, user=user)
     task.status = not task.status
     task.completed_at = timezone.now() if task.status else None

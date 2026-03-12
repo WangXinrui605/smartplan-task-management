@@ -16,4 +16,7 @@ urlpatterns = [
     path('task/delete/<int:task_id>/', views.delete_task, name='delete_task'),
     # 切换任务状态（已完成/未完成）
     path('task/toggle/<int:task_id>/', views.toggle_task_status, name='toggle_task_status'),
+    path('login/', views.login_view, name='login'),
+    path('register/', views.register_view, name='register'),
+    path('logout/', views.logout_view, name='logout'),
 ]

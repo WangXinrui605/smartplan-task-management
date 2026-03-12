@@ -1,0 +1,42 @@
+{% extends 'task/base.html' %}
+
+{% block title %}Register - SmartPlan{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Create Account</h2>
+    <p>Register to manage your own tasks securely.</p>
+</div>
+
+<div class="form-card">
+    <form method="post">
+        {% csrf_token %}
+
+        {% if form.errors %}
+            <div class="error-box">
+                Please correct the errors below.
+            </div>
+        {% endif %}
+
+        <div class="form-group">
+            <label for="{{ form.username.id_for_label }}">Username</label>
+            {{ form.username }}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.password1.id_for_label }}">Password</label>
+            {{ form.password1 }}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.password2.id_for_label }}">Confirm Password</label>
+            {{ form.password2 }}
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Register</button>
+            <a href="{% url 'login' %}" class="btn btn-secondary">Back to login</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
