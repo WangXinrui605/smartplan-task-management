@@ -1,42 +1,62 @@
-{% extends 'task/base.html' %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - SmartPlan</title>
+    <link rel="stylesheet" href="{% static 'task/css/login.css' %}">
+</head>
+<body>
+    <header class="topbar">
+        <div class="brand">SmartPlan</div>
+        <nav class="nav-links">
+            <a href="{% url 'login' %}">Login</a>
+            <a href="{% url 'register' %}">Register</a>
+        </nav>
+    </header>
 
-{% block title %}Register - SmartPlan{% endblock %}
+    <main class="login-page register-page">
+        <div class="bg-shape cloud cloud-left"></div>
+        <div class="bg-shape cloud cloud-right"></div>
+        <div class="bg-shape star star-left"></div>
+        <div class="bg-shape star star-mid"></div>
+        <div class="bg-shape star star-right"></div>
 
-{% block content %}
-<div class="page-header">
-    <h2>Create Account</h2>
-    <p>Register to manage your own tasks securely.</p>
-</div>
+        <section class="hero">
+            <h1 class="title-bubble">Create Account</h1>
+            <p class="subtitle">Register to manage your own tasks securely.</p>
 
-<div class="form-card">
-    <form method="post">
-        {% csrf_token %}
+            <div class="login-card">
+                <form method="post">
+                    {% csrf_token %}
 
-        {% if form.errors %}
-            <div class="error-box">
-                Please correct the errors below.
+                    {% if form.errors %}
+                    <div class="error-message">
+                        {% for field in form %}
+                            {% for error in field.errors %}
+                                <div>{{ error }}</div>
+                            {% endfor %}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" required>
+
+                    <label for="password1">Password</label>
+                    <input type="password" id="password1" name="password1" required>
+
+                    <label for="password2">Confirm Password</label>
+                    <input type="password" id="password2" name="password2" required>
+
+                    <div class="button-row">
+                        <button type="submit" class="btn btn-primary">Register</button>
+                        <a href="{% url 'login' %}" class="btn btn-secondary">Back to login</a>
+                    </div>
+                </form>
             </div>
-        {% endif %}
-
-        <div class="form-group">
-            <label for="{{ form.username.id_for_label }}">Username</label>
-            {{ form.username }}
-        </div>
-
-        <div class="form-group">
-            <label for="{{ form.password1.id_for_label }}">Password</label>
-            {{ form.password1 }}
-        </div>
-
-        <div class="form-group">
-            <label for="{{ form.password2.id_for_label }}">Confirm Password</label>
-            {{ form.password2 }}
-        </div>
-
-        <div class="form-actions">
-            <button type="submit" class="btn btn-primary">Register</button>
-            <a href="{% url 'login' %}" class="btn btn-secondary">Back to login</a>
-        </div>
-    </form>
-</div>
-{% endblock %}
+        </section>
+    </main>
+</body>
+</html>

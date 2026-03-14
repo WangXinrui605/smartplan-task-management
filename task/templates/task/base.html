@@ -281,16 +281,37 @@
             outline: 3px solid #2563eb;
             outline-offset: 2px;
         }
+
     </style>
 </head>
 <body>
     <header class="topbar">
         <div class="topbar-inner">
-            <div class="brand">
-                <h1>SmartPlan</h1>
-                {% if user.is_authenticated %}
-                    <span class="welcome-text">Welcome, {{ user.username }}!</span>
-                {% endif %}
+            <div class="brand" style="display:flex; align-items:center; gap:12px;">
+    
+                <div style="
+                    width:44px;
+                    height:44px;
+                    border-radius:50%;
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                    font-size:24px;
+                    background:linear-gradient(180deg,#ffe88b,#ffc63d);
+                    box-shadow:0 4px 10px rgba(255,200,60,0.3);
+                ">
+                    🙂
+                </div>
+
+                <div>
+                    <h1 style="margin:0;">SmartPlan</h1>
+                    {% if user.is_authenticated %}
+                        <div style="font-size:14px;color:#444;">
+                            Welcome, {{ user.username }}!
+                        </div>
+                    {% endif %}
+                </div>
+
             </div>
 
             <nav class="nav-links" aria-label="Main navigation">
