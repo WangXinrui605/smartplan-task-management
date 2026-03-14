@@ -9,6 +9,10 @@ from django.utils import timezone
 from django.db.models import Q
 from django.db.models import Case, When, IntegerField
 
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+import json
+
 def register_view(request):
     if request.user.is_authenticated:
         return redirect('task_dashboard')
@@ -296,4 +300,46 @@ def toggle_task_status(request, task_id):
     task.completed_at = timezone.now() if task.status else None
     task.save()
     return redirect('task_dashboard')
+
+#7. AI
+@require_POST
+@login_required
+def suggest_priority(request):
+    try:
+        data = json.loads(request.body)
+        title = data.get("title", "").lower()
+        note = data.get("note", "").lower()
+
+        text = f"{title} {note}"
+
+        high_keywords = [
+            "urgent", "asap", "immediately", "today", "tonight",
+            "deadline", "exam", "submission", "important"
+        ]
+        medium_keywords = [
+            "meeting", "review", "prepare", "assignment",
+            "report", "presentation", "project"
+        ]
+
+        if any(word in text for word in high_keywords):
+            priority = "High"
+            reason = "The task contains urgent or deadline-related words."
+        elif any(word in text for word in medium_keywords):
+            priority = "Medium"
+            reason = "The task looks important but not immediately urgent."
+        else:
+            priority = "Low"
+            reason = "No urgent keywords were detected."
+
+        return JsonResponse({
+            "success": True,
+            "priority": priority,
+            "reason": reason
+        })
+
+    except Exception as e:
+        return JsonResponse({
+            "success": False,
+            "error": str(e)
+        }, status=400)
 
