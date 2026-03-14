@@ -125,17 +125,26 @@ def stats_page(request):
     # 第一步：查询当前用户的所有任务
     tasks = Task.objects.filter(user=user)
 
-    # 按时间范围筛选（这里先按 created_at 来算）
+    # 按截止日期 due_date 筛选统计范围
     if range_filter == 'week':
-        start_date = today - timedelta(days=today.weekday())  # 本周周一
-        tasks = tasks.filter(created_at__date__gte=start_date)
-        range_label = 'This Week'
+        week_start = today - timedelta(days=today.weekday())  # 本周周一
+        week_end = week_start + timedelta(days=6)  # 本周周日
+        tasks = tasks.filter(due_date__range=[week_start, week_end])
+        range_label = 'Due This Week'
     elif range_filter == 'month':
-        start_date = today.replace(day=1)  # 本月1号
-        tasks = tasks.filter(created_at__date__gte=start_date)
-        range_label = 'This Month'
+        month_start = today.replace(day=1)  # 本月1号
+
+        # 先算下个月1号，再减1天，得到本月最后一天
+        if month_start.month == 12:
+            next_month_start = month_start.replace(year=month_start.year + 1, month=1, day=1)
+        else:
+            next_month_start = month_start.replace(month=month_start.month + 1, day=1)
+
+        month_end = next_month_start - timedelta(days=1)
+        tasks = tasks.filter(due_date__range=[month_start, month_end])
+        range_label = 'Due This Month'
     else:
-        range_label = 'All Time'
+        range_label = 'All Tasks'
 
     # 第二步：计算统计数据
     total_tasks = tasks.count()#总任务数
