@@ -10,7 +10,15 @@
         .btn { padding: 10px 15px; background-color: #2196F3; color: white; border: none; border-radius: 4px; cursor: pointer; }
         .btn-cancel { background-color: #ccc; color: black; margin-right: 10px; }
         .error { color: red; }
-    </style>
+        #priority-suggestion-result {
+            margin-top: 12px;
+            padding: 10px;
+            background-color: #f2f7ff;
+            border-left: 4px solid #2196F3;
+            font-size: 16px;
+            color: #333;
+    }
+</style>
 </head>
 <body>
     <h1>Create Task</h1>
@@ -66,7 +74,7 @@
             <p id="priority-suggestion-result"></p>
         </div>
         
-        <button type="button" class="btn btn-cancel" onclick="window.location.href='{% url 'task_dashboard' %}'">取消</button>
+        <button type="button" class="btn btn-cancel" onclick="window.location.href='{% url 'task_dashboard' %}'">cancel</button>
         <button type="submit" class="btn">Save</button>
     </form>
 <!-- AI JavaScript -->
