@@ -59,8 +59,62 @@
              <textarea name="note" id="note" class="form-control" rows="4"
               placeholder="Write task plan, steps, or description here..."></textarea>
         </div>
+
+ <!-- AI -->
+        <div class="form-group">
+            <button type="button" class="btn" id="suggest-priority-btn">Suggest Priority</button>
+            <p id="priority-suggestion-result"></p>
+        </div>
+        
         <button type="button" class="btn btn-cancel" onclick="window.location.href='{% url 'task_dashboard' %}'">取消</button>
         <button type="submit" class="btn">Save</button>
     </form>
+<!-- AI JavaScript -->
+<script>
+function getCSRFToken() {
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+        cookie = cookie.trim();
+        if (cookie.startsWith('csrftoken=')) {
+            return cookie.substring('csrftoken='.length);
+        }
+    }
+    return '';
+}
+
+document.getElementById("suggest-priority-btn").addEventListener("click", async function () {
+    const title = document.getElementById("title").value;
+    const note = document.getElementById("note").value;
+    const resultBox = document.getElementById("priority-suggestion-result");
+
+    resultBox.textContent = "Generating suggestion...";
+
+    try {
+        const response = await fetch("{% url 'suggest_priority' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCSRFToken()
+            },
+            body: JSON.stringify({
+                title: title,
+                note: note
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            document.getElementById("priority").value = data.priority.toLowerCase();
+            resultBox.textContent = `Suggested priority: ${data.priority}. ${data.reason}`;
+        } else {
+            resultBox.textContent = "Failed to generate suggestion.";
+        }
+    } catch (error) {
+        resultBox.textContent = "Error while generating suggestion.";
+        console.error(error);
+    }
+});
+</script>
 </body>
 </html>
