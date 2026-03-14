@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>创建任务 - SmartPlan</title>
+    <title>Create Task - SmartPlan</title>
     <style>
         body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
         .form-group { margin-bottom: 15px; }
@@ -19,6 +19,7 @@
             color: #333;
     }
 </style>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 </head>
 <body>
     <h1>Create Task</h1>
@@ -43,7 +44,7 @@
         </div>
         <div class="form-group">
             <label for="due_date">Due Date</label>
-            <input type="date" id="due_date" name="due_date">
+            <input type="text" id="due_date" name="due_date" placeholder="Select a date">
         </div>
         <div class="form-group">
             <label for="category">Category</label>
@@ -123,6 +124,14 @@ document.getElementById("suggest-priority-btn").addEventListener("click", async 
         console.error(error);
     }
 });
+</script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+    flatpickr("#due_date", {
+        dateFormat: "Y-m-d",
+        locale: "default",
+        allowInput: true
+    });
 </script>
 </body>
 </html>
