@@ -88,13 +88,21 @@
         <tbody>
         {% if tasks %}
             {% for task in tasks %}
-                <tr>
+                <tr class="{% if task.status %}task-completed{% endif %}">
                     <td>
                         <a href="{% url 'toggle_task_status' task.id %}" aria-label="Toggle task status">
-                            {% if task.status %}✓ Completed{% else %}□ Incomplete{% endif %}
+                            {% if task.status %}
+                                <span class="status-badge status-done">✔ Completed</span>
+                            {% else %}
+                                <span class="status-badge status-active">○ Incomplete</span>
+                            {% endif %}
                         </a>
                     </td>
-                    <td>{{ task.title }}</td>
+                    <td>
+                        <span class="{% if task.status %}task-title-completed{% endif %}">
+                            {{ task.title }}
+                        </span>
+                    </td>
                     <td>
                         {% if task.note %}
                             <a href="javascript:void(0)"
