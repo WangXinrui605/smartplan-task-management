@@ -1,75 +1,246 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <title>Edit Task - SmartPlan</title>
-    <style>
-        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; }
-        input, select, textarea { width: 100%; padding: 8px; box-sizing: border-box; }
-        .btn { padding: 10px 15px; background-color: #2196F3; color: white; border: none; border-radius: 4px; cursor: pointer; }
-        .btn-cancel { background-color: #ccc; color: black; margin-right: 10px; }
-        .error { color: red; }
-    </style>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-</head>
-<body>
-    <h1>Edit Task</h1>
-    {% if errors %}
-        <div class="error">
-            <ul>
+{% extends 'task/base.html' %}
+
+{% block title %}Edit Task - SmartPlan{% endblock %}
+
+{% block content %}
+<style>
+    .edit-task-shell {
+        max-width: 980px;
+        margin: 0 auto;
+    }
+
+    .edit-task-header {
+        margin-bottom: 24px;
+        text-align: center;
+    }
+
+    .edit-task-header h2 {
+        margin: 0 0 10px;
+        font-size: 56px;
+        line-height: 1.05;
+        font-weight: 900;
+        color: #111827;
+    }
+
+    .edit-task-header p {
+        margin: 0 auto;
+        max-width: 760px;
+        font-size: 18px;
+        color: #667085;
+    }
+
+    .edit-task-card {
+        background: rgba(255, 255, 255, 0.96);
+        border-radius: 30px;
+        padding: 34px 36px;
+        box-shadow:
+            0 16px 34px rgba(238, 130, 167, 0.10),
+            0 0 0 1px rgba(250, 220, 230, 0.82) inset;
+    }
+
+    .edit-task-card .form-group {
+        margin-bottom: 22px;
+    }
+
+    .edit-task-card label {
+        display: block;
+        margin-bottom: 10px;
+        font-size: 17px;
+        font-weight: 800;
+        color: #151b28;
+    }
+
+    .edit-task-card input[type="text"],
+    .edit-task-card select,
+    .edit-task-card textarea {
+        width: 100%;
+        padding: 15px 16px;
+        border-radius: 16px;
+        border: 1px solid #cfd6e3;
+        background: linear-gradient(180deg, #ffffff 0%, #fcfdff 100%);
+        font-size: 16px;
+        box-sizing: border-box;
+        box-shadow:
+            0 4px 10px rgba(170, 180, 210, 0.08),
+            0 0 0 1px rgba(255,255,255,0.80) inset;
+    }
+
+    .edit-task-card textarea {
+        resize: vertical;
+        min-height: 120px;
+    }
+
+    .edit-task-card input[type="text"]:focus,
+    .edit-task-card select:focus,
+    .edit-task-card textarea:focus {
+        outline: none;
+        border-color: #8bb7ff;
+        box-shadow:
+            0 0 0 4px rgba(88, 164, 255, 0.16),
+            0 8px 18px rgba(88, 164, 255, 0.12);
+    }
+
+    .checkbox-row {
+        margin-top: 4px;
+        padding: 14px 16px;
+        border-radius: 18px;
+        background: linear-gradient(180deg, #f8fbff 0%, #eef4ff 100%);
+        border: 1px solid #d8e4fb;
+    }
+
+    .checkbox-label {
+        display: flex !important;
+        align-items: center;
+        gap: 12px;
+        margin: 0 !important;
+        font-size: 16px !important;
+        font-weight: 700 !important;
+        color: #21304a !important;
+        cursor: pointer;
+    }
+
+    .checkbox-label input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        margin: 0;
+        accent-color: #2b61ef;
+        flex-shrink: 0;
+    }
+
+    .edit-task-actions {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-top: 28px;
+    }
+
+    .edit-task-actions .btn {
+        min-width: 132px;
+    }
+
+    .error-list {
+        margin: 0 0 24px;
+        padding: 14px 16px 14px 34px;
+        border-radius: 16px;
+        background: #fff1f2;
+        border: 1px solid #fecdd3;
+        color: #b42318;
+    }
+
+    @media (max-width: 768px) {
+        .edit-task-header h2 {
+            font-size: 40px;
+        }
+
+        .edit-task-card {
+            padding: 22px 18px;
+            border-radius: 22px;
+        }
+
+        .edit-task-actions {
+            flex-direction: column;
+        }
+
+        .edit-task-actions .btn {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="edit-task-shell">
+    <div class="edit-task-header">
+        <h2>Edit Task</h2>
+        <p>Update task details, due date, category, priority, and completion status.</p>
+    </div>
+
+    <div class="edit-task-card">
+        {% if errors %}
+            <ul class="error-list">
                 {% for error in errors %}
                     <li>{{ error }}</li>
                 {% endfor %}
             </ul>
-        </div>
-    {% endif %}
-    <form method="post">
-        {% csrf_token %}
-        <div class="form-group">
-            <label for="title">Task Title *</label>
-            <input type="text" id="title" name="title" value="{{ task.title }}" required>
-        </div>
-        <div class="form-group">
-            <label for="description">Task Description</label>
-            <textarea id="description" name="description" rows="3">{{ task.description }}</textarea>
-        </div>
-        <div class="form-group">
-            <label for="due_date">Due Date</label>
-            <input type="text" id="due_date" name="due_date" value="{{ task.due_date|date:'Y-m-d' }}" placeholder="Select a date">
-        </div>
-        <div class="form-group">
-            <label for="category">Category</label>
-            <select id="category" name="category">
-                <option value="">-- select category --</option>
-                {% for category in categories %}
-                    <option value="{{ category.id }}" {% if task.category.id == category.id %}selected{% endif %}>{{ category.name }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="form-group">
-            <label for="priority">Priority</label>
-            <select id="priority" name="priority">
-                <option value="high" {% if task.priority == 'high' %}selected{% endif %}>High</option>
-                <option value="medium" {% if task.priority == 'medium' %}selected{% endif %}>Medium</option>
-                <option value="low" {% if task.priority == 'low' %}selected{% endif %}>Low</option>
-            </select>
-        </div>
-        <div class="mb-3">
-             <label for="note" class="form-label">Note</label>
-             <textarea name="note" id="note" class="form-control" rows="4">
-             {{ task.note }}
-             </textarea>
-        </div>
-        <div class="form-group">
-            <label for="status">
-                <input type="checkbox" id="status" name="status" {% if task.status %}checked{% endif %}> Signed as completed
-            </label>
-        </div>
+        {% endif %}
 
-        <button type="button" class="btn btn-cancel" onclick="window.location.href='{% url 'task_dashboard' %}'">Cancel</button>
-        <button type="submit" class="btn">Update</button>
-    </form>
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="title">Task Title *</label>
+                <input type="text" id="title" name="title" value="{{ task.title }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="description">Task Description</label>
+                <textarea id="description" name="description" rows="4">{{ task.description }}</textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="due_date">Due Date</label>
+                <input
+                    type="text"
+                    id="due_date"
+                    name="due_date"
+                    value="{{ task.due_date|date:'Y-m-d' }}"
+                    placeholder="Select a date"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="category">Category</label>
+                <select id="category" name="category">
+                    <option value="">-- select category --</option>
+                    {% for category in categories %}
+                        <option value="{{ category.id }}" {% if task.category and task.category.id == category.id %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="priority">Priority</label>
+                <select id="priority" name="priority">
+                    <option value="high" {% if task.priority == 'high' %}selected{% endif %}>High</option>
+                    <option value="medium" {% if task.priority == 'medium' %}selected{% endif %}>Medium</option>
+                    <option value="low" {% if task.priority == 'low' %}selected{% endif %}>Low</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="note">Note</label>
+                <textarea
+                    name="note"
+                    id="note"
+                    rows="5"
+                    placeholder="Write task plan, steps, or description here..."
+                >{{ task.note }}</textarea>
+            </div>
+
+            <div class="form-group">
+                <div class="checkbox-row">
+                    <label for="status" class="checkbox-label">
+                        <input type="checkbox" id="status" name="status" {% if task.status %}checked{% endif %}>
+                        Mark this task as completed
+                    </label>
+                </div>
+            </div>
+
+            <div class="edit-task-actions">
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    onclick="window.location.href='{% url 'task_dashboard' %}'"
+                >
+                    Cancel
+                </button>
+                <button type="submit" class="btn btn-primary">Update</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
     flatpickr("#due_date", {
@@ -78,5 +249,4 @@
         allowInput: true
     });
 </script>
-</body>
-</html>
+{% endblock %}
