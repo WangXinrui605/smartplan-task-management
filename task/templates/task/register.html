@@ -12,7 +12,7 @@
         <div class="brand">SmartPlan</div>
         <nav class="nav-links">
             <a href="{% url 'login' %}">Login</a>
-            <a href="{% url 'register' %}">Register</a>
+            <a href="{% url 'register' %}" class="active">Register</a>
         </nav>
     </header>
 
@@ -24,35 +24,72 @@
         <div class="bg-shape star star-right"></div>
 
         <section class="hero">
+            <p class="page-tag">Welcome to SmartPlan</p>
             <h1 class="title-bubble">Create Account</h1>
             <p class="subtitle">Register to manage your own tasks securely.</p>
 
             <div class="login-card">
-                <form method="post">
+                <form method="post" class="auth-form" novalidate>
                     {% csrf_token %}
 
-                    {% if form.errors %}
+                    {% if form.non_field_errors %}
                     <div class="error-message">
-                        {% for field in form %}
-                            {% for error in field.errors %}
-                                <div>{{ error }}</div>
-                            {% endfor %}
+                        {% for error in form.non_field_errors %}
+                            <div>{{ error }}</div>
                         {% endfor %}
                     </div>
                     {% endif %}
 
-                    <label for="username">Username</label>
-                    <input type="text" id="username" name="username" required>
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input
+                            type="text"
+                            id="username"
+                            name="username"
+                            value="{{ form.username.value|default:'' }}"
+                            placeholder="Choose a username"
+                            class="{% if form.username.errors %}input-error{% endif %}"
+                            required
+                        >
+                        {% for error in form.username.errors %}
+                            <div class="field-error">{{ error }}</div>
+                        {% endfor %}
+                    </div>
 
-                    <label for="password1">Password</label>
-                    <input type="password" id="password1" name="password1" required>
+                    <div class="form-group">
+                        <label for="password1">Password</label>
+                        <input
+                            type="password"
+                            id="password1"
+                            name="password1"
+                            placeholder="Create a password"
+                            class="{% if form.password1.errors %}input-error{% endif %}"
+                            required
+                        >
+                        <div class="field-hint">Use at least 8 characters with a mix of letters and numbers.</div>
+                        {% for error in form.password1.errors %}
+                            <div class="field-error">{{ error }}</div>
+                        {% endfor %}
+                    </div>
 
-                    <label for="password2">Confirm Password</label>
-                    <input type="password" id="password2" name="password2" required>
+                    <div class="form-group">
+                        <label for="password2">Confirm Password</label>
+                        <input
+                            type="password"
+                            id="password2"
+                            name="password2"
+                            placeholder="Re-enter your password"
+                            class="{% if form.password2.errors %}input-error{% endif %}"
+                            required
+                        >
+                        {% for error in form.password2.errors %}
+                            <div class="field-error">{{ error }}</div>
+                        {% endfor %}
+                    </div>
 
-                    <div class="button-row">
-                        <button type="submit" class="btn btn-primary">Register</button>
-                        <a href="{% url 'login' %}" class="btn btn-secondary">Back to login</a>
+                    <div class="button-row single-column">
+                        <button type="submit" class="btn btn-primary">Create account</button>
+                        <a href="{% url 'login' %}" class="text-link">Already have an account? Sign in</a>
                     </div>
                 </form>
             </div>
