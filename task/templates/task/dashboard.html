@@ -3,6 +3,544 @@
 {% block title %}SmartPlan - Dashboard{% endblock %}
 
 {% block content %}
+<style>
+    .filter-fields {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+        align-items: flex-end;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .search-input {
+        min-width: 260px;
+    }
+
+    .top-actions {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .dashboard-section {
+        margin-top: 24px;
+    }
+
+    .period-tabs {
+        margin-bottom: 18px;
+    }
+
+    .section-title {
+        margin: 0 0 18px;
+        font-size: 27px;
+        font-weight: 750;
+        color: #111827;
+        letter-spacing: -0.02em;
+        line-height: 1.2;
+    }
+
+    .history-hint {
+        margin: -8px 0 18px;
+        font-size: 14px;
+        color: #64748b;
+        line-height: 1.55;
+    }
+
+    .table-wrap {
+        overflow-x: auto;
+    }
+
+    .task-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 18px;
+        overflow: hidden;
+        border-radius: 20px;
+        table-layout: fixed;
+    }
+
+    .task-table th {
+        font-size: 16px;
+        font-weight: 700;
+        color: #1e293b;
+        padding: 20px 18px;
+        background: #fffdfd;
+        text-align: center;
+        vertical-align: middle;
+        border: 1px solid #eadfe5;
+        line-height: 1.4;
+        letter-spacing: -0.01em;
+    }
+
+    .task-table td {
+        padding: 24px 18px;
+        vertical-align: middle;
+        text-align: center;
+        font-size: 16px;
+        font-weight: 500;
+        border: 1px solid #eadfe5;
+        color: #475569;
+        line-height: 1.55;
+    }
+
+    .task-table th:nth-child(1),
+    .task-table td:nth-child(1) {
+        width: 16%;
+    }
+
+    .task-table th:nth-child(2),
+    .task-table td:nth-child(2) {
+        width: 18%;
+    }
+
+    .task-table th:nth-child(3),
+    .task-table td:nth-child(3) {
+        width: 24%;
+    }
+
+    .task-table th:nth-child(4),
+    .task-table td:nth-child(4) {
+        width: 10%;
+    }
+
+    .task-table th:nth-child(5),
+    .task-table td:nth-child(5) {
+        width: 12%;
+    }
+
+    .task-table th:nth-child(6),
+    .task-table td:nth-child(6) {
+        width: 14%;
+    }
+
+    .task-table th:nth-child(7),
+    .task-table td:nth-child(7) {
+        width: 16%;
+    }
+
+    .task-row {
+        transition: background-color 0.18s ease;
+        position: relative;
+    }
+
+    .task-row:hover {
+        background: #fafbff;
+    }
+
+    .task-completed {
+        background: linear-gradient(180deg, #f2f5f9 0%, #eaedf2 100%);
+    }
+
+    .task-completed td {
+        color: #7c8798;
+    }
+
+    .task-completed td:not(:first-child) {
+        opacity: 0.84;
+    }
+
+    .task-title {
+        color: #0f172a;
+        font-weight: 650;
+        font-size: 15px;
+        line-height: 1.55;
+        letter-spacing: -0.01em;
+        word-break: break-word;
+        display: inline-block;
+        max-width: 100%;
+    }
+
+    .task-title-completed {
+        color: #98a2b3;
+        font-weight: 620;
+        font-size: 15px;
+        line-height: 1.55;
+        letter-spacing: -0.01em;
+        text-decoration: line-through;
+        text-decoration-thickness: 2px;
+        text-decoration-color: #a8b3c2;
+        word-break: break-word;
+        opacity: 0.9;
+        display: inline-block;
+        max-width: 100%;
+    }
+
+    .muted-text {
+        color: #8091a7;
+        font-size: 15px;
+        font-weight: 500;
+        line-height: 1.6;
+    }
+
+    .task-completed .muted-text {
+        color: #9ba8b8;
+    }
+
+    .task-completed .task-title-completed {
+        color: #a0aaba;
+    }
+
+    .note-cell {
+        text-align: left;
+        padding-left: 22px;
+        padding-right: 22px;
+    }
+
+    .note-link {
+        color: #2f5cf3;
+        font-size: 15px;
+        font-weight: 500;
+        line-height: 1.65;
+        text-decoration: underline;
+        text-decoration-thickness: 1.5px;
+        text-underline-offset: 3px;
+        display: inline-block;
+        max-width: 100%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        word-break: normal;
+        overflow-wrap: normal;
+        vertical-align: middle;
+    }
+
+    .note-link:hover {
+        color: #2348d4;
+    }
+
+    .task-completed .note-link {
+        opacity: 0.72;
+    }
+
+    .task-table td:nth-child(6) {
+        font-size: 16px;
+        font-weight: 500;
+        color: #475467;
+    }
+
+    .task-actions {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .task-actions .btn {
+        min-width: 92px;
+        height: 46px;
+        padding: 0 18px;
+        font-size: 16px;
+        font-weight: 700;
+        border-radius: 16px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .btn-danger {
+        background: linear-gradient(180deg, #ff6b7a 0%, #f43f5e 100%);
+        color: #ffffff !important;
+        border: 1px solid rgba(220, 38, 38, 0.18);
+        box-shadow: 0 8px 18px rgba(244, 63, 94, 0.20);
+    }
+
+    .btn-danger:hover {
+        background: linear-gradient(180deg, #fb7185 0%, #e11d48 100%);
+        color: #ffffff !important;
+        box-shadow: 0 10px 20px rgba(235, 36, 64, 0.28);
+    }
+
+    .task-completed .btn-danger {
+        background: #fff5f6;
+        color: #d9465f !important;
+        border: 1px solid #f8c7d0;
+        box-shadow: none;
+    }
+
+    .task-completed .btn-danger:hover {
+        background: #ffecef;
+        color: #be123c !important;
+        box-shadow: none;
+    }
+
+    .task-completed .btn-secondary {
+        background: #f8fafc;
+        color: #64748b;
+        border: 1px solid #dbe2ea;
+    }
+
+    .status-badge,
+    .due-badge,
+    .history-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 40px;
+        padding: 0 18px;
+        border-radius: 999px;
+        font-size: 15px;
+        font-weight: 700;
+        white-space: nowrap;
+        letter-spacing: -0.01em;
+    }
+
+    .priority-badge,
+    .category-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 40px;
+        padding: 0 18px;
+        border-radius: 999px;
+        font-size: 15px;
+        font-weight: 700;
+        white-space: nowrap;
+        letter-spacing: -0.01em;
+        border: 1px solid transparent;
+    }
+
+    /* status */
+    .status-active {
+        background: linear-gradient(180deg, #dbeafe 0%, #bfd7fb 100%);
+        color: #1d4ed8;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.72);
+    }
+
+    .status-done {
+        background: linear-gradient(180deg, #ccefd9 0%, #b7e7c8 100%);
+        color: #166534;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.72);
+    }
+
+    /* priority: redesigned to avoid status-color conflict */
+    .priority-high {
+        background: linear-gradient(180deg, #f6e4ef 0%, #efd6e7 100%);
+        color: #a64d79;
+        border-color: #eacfe0;
+    }
+
+    .priority-medium {
+        background: linear-gradient(180deg, #f8edd2 0%, #f3e1b8 100%);
+        color: #b07a1a;
+        border-color: #eddcb3;
+    }
+
+    .priority-low {
+        background: linear-gradient(180deg, #e8eef6 0%, #dbe5f0 100%);
+        color: #5f7996;
+        border-color: #d5e0eb;
+    }
+
+    .task-completed .priority-badge {
+        opacity: 0.8;
+    }
+
+    /* category: match statistics page */
+    .category-badge-study {
+        background: linear-gradient(180deg, #e8ecff 0%, #dfe5ff 100%);
+        color: #5b6ee8;
+        border-color: #d5ddff;
+    }
+
+    .category-badge-work {
+        background: linear-gradient(180deg, #f1e9ff 0%, #eadfff 100%);
+        color: #9462df;
+        border-color: #e3d5ff;
+    }
+
+    .category-badge-life {
+        background: linear-gradient(180deg, #e4f7fc 0%, #d8f2f9 100%);
+        color: #2f9fc1;
+        border-color: #cdebf4;
+    }
+
+    .category-badge-default {
+        background: linear-gradient(180deg, #eef2f7 0%, #e2e8f0 100%);
+        color: #64748b;
+        border-color: #dbe3ec;
+    }
+
+    .due-cell {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .due-date-text {
+        font-weight: 600;
+        color: #475569;
+        line-height: 1.45;
+        text-align: center;
+    }
+
+    .due-badge-overdue {
+        background: linear-gradient(180deg, #fee2e2 0%, #fecaca 100%);
+        color: #b91c1c;
+    }
+
+    .due-badge-today {
+        background: linear-gradient(180deg, #ffedd5 0%, #fdba74 100%);
+        color: #9a3412;
+    }
+
+    .due-badge-tomorrow {
+        background: linear-gradient(180deg, #fef3c7 0%, #fde68a 100%);
+        color: #a16207;
+    }
+
+    .due-badge-upcoming {
+        background: linear-gradient(180deg, #e0f2fe 0%, #bae6fd 100%);
+        color: #0369a1;
+    }
+
+    .due-badge-done {
+        background: linear-gradient(180deg, #dcfce7 0%, #bbf7d0 100%);
+        color: #166534;
+    }
+
+    .history-badge-completed {
+        background: linear-gradient(180deg, #dcfce7 0%, #bbf7d0 100%);
+        color: #166534;
+    }
+
+    .history-badge-overdue {
+        background: linear-gradient(180deg, #fee2e2 0%, #fecaca 100%);
+        color: #b91c1c;
+    }
+
+    .empty-cell {
+        text-align: center;
+        color: #64748b;
+        font-size: 15px;
+        padding: 30px 20px;
+    }
+
+    .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        z-index: 1000;
+    }
+
+    .delete-backdrop {
+        background: rgba(15, 23, 42, 0.45);
+    }
+
+    .modal-card {
+        background: white;
+        width: min(520px, 90%);
+        margin: 8% auto;
+        padding: 24px;
+        border-radius: 18px;
+        box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
+    }
+
+    .note-modal-card {
+        width: min(520px, 90%);
+    }
+
+    .delete-modal-card {
+        width: min(480px, 90%);
+        margin: 10% auto;
+        padding: 28px;
+        border-radius: 20px;
+        box-shadow: 0 20px 50px rgba(15, 23, 42, 0.18);
+        border: 1px solid #e5e7eb;
+    }
+
+    .modal-title {
+        margin: 0 0 12px;
+        font-size: 28px;
+        color: #0f172a;
+        line-height: 1.25;
+    }
+
+    .modal-text {
+        margin: 0;
+        font-size: 16px;
+        line-height: 1.65;
+        color: #475569;
+        white-space: pre-wrap;
+    }
+
+    .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        margin-top: 24px;
+    }
+
+    @media (max-width: 768px) {
+        .search-input {
+            min-width: 100%;
+        }
+
+        .task-table {
+            min-width: 980px;
+        }
+
+        .task-table th,
+        .task-table td {
+            padding: 16px 14px;
+        }
+
+        .task-actions {
+            gap: 10px;
+        }
+
+        .task-actions .btn {
+            min-width: 84px;
+            height: 42px;
+            font-size: 14px;
+            padding: 0 14px;
+        }
+
+        .section-title {
+            font-size: 24px;
+        }
+
+        .status-badge,
+        .priority-badge,
+        .due-badge,
+        .history-badge,
+        .category-badge {
+            min-height: 36px;
+            font-size: 14px;
+            padding: 0 14px;
+        }
+
+        .task-title,
+        .task-title-completed,
+        .note-link,
+        .muted-text {
+            font-size: 14px;
+        }
+
+        .modal-card,
+        .delete-modal-card {
+            margin: 20% auto;
+            padding: 20px;
+        }
+
+        .modal-title {
+            font-size: 24px;
+        }
+
+        .modal-text {
+            font-size: 15px;
+        }
+    }
+</style>
+
 <div class="page-header">
     <h2>Task Dashboard</h2>
     <p>View, organise, and manage all your current tasks in one place.</p>
@@ -10,8 +548,8 @@
 
 <div class="content-card">
     <form method="get" class="filter-bar">
-        <div class="inline-actions" style="display:flex; gap:16px; flex-wrap:wrap; align-items:end;">
-            <div>
+        <div class="inline-actions filter-fields">
+            <div class="filter-group">
                 <label for="q">Search tasks</label>
                 <input
                     type="search"
@@ -19,11 +557,11 @@
                     name="q"
                     value="{{ current_query }}"
                     placeholder="Search by title or description"
-                    style="min-width:260px;"
+                    class="search-input"
                 >
             </div>
 
-            <div>
+            <div class="filter-group">
                 <label for="sort">Sort tasks by</label>
                 <select id="sort" name="sort">
                     <option value="due_date" {% if current_sort == 'due_date' %}selected{% endif %}>Due Date</option>
@@ -34,21 +572,21 @@
 
             <input type="hidden" name="period" value="{{ current_period }}">
 
-            <div>
+            <div class="filter-group filter-submit">
                 <label>&nbsp;</label>
                 <button type="submit" class="btn btn-secondary">Apply</button>
             </div>
         </div>
 
-        <div class="inline-actions">
+        <div class="inline-actions top-actions">
             <a href="{% url 'create_task' %}" class="btn btn-primary">+ Add New Task</a>
             <a href="{% url 'stats_page' %}" class="btn btn-secondary">View Statistics</a>
         </div>
     </form>
 </div>
 
-<div class="content-card" style="margin-top:24px;">
-    <div class="inline-actions" style="margin-bottom:18px;">
+<div class="content-card dashboard-section">
+    <div class="inline-actions period-tabs">
         <a href="?period=all&sort={{ current_sort }}&q={{ current_query }}"
            class="btn {% if current_period == 'all' %}btn-primary{% else %}btn-secondary{% endif %}">
             All
@@ -70,9 +608,13 @@
         </a>
     </div>
 
-    <h3 style="margin-top:0;">{{ period_title }}</h3>
+    <h3 class="section-title">{{ period_title }}</h3>
 
-    <div style="overflow-x:auto;">
+    {% if current_period == 'history' %}
+        <p class="history-hint">Completed tasks and overdue unfinished tasks are shown here.</p>
+    {% endif %}
+
+    <div class="table-wrap">
         <table class="task-table">
             <thead>
                 <tr>
@@ -88,9 +630,10 @@
             <tbody>
             {% if tasks %}
                 {% for task in tasks %}
-                    <tr class="{% if task.status %}task-completed{% endif %}">
+                    <tr id="task-{{ task.id }}" class="task-row {% if task.status %}task-completed{% endif %}">
                         <td>
-                            <a href="{% url 'toggle_task_status' task.id %}" aria-label="Toggle task status">
+                            <a href="{% url 'toggle_task_status' task.id %}?next={{ request.get_full_path|urlencode }}%23task-{{ task.id }}"
+                               aria-label="Toggle task status">
                                 {% if task.status %}
                                     <span class="status-badge status-done">✔ Completed</span>
                                 {% else %}
@@ -98,41 +641,82 @@
                                 {% endif %}
                             </a>
                         </td>
+
                         <td>
-                            <span class="{% if task.status %}task-title-completed{% endif %}">
+                            <span class="{% if task.status %}task-title-completed{% else %}task-title{% endif %}">
                                 {{ task.title }}
                             </span>
                         </td>
-                        <td>
+
+                        <td class="note-cell">
                             {% if task.note %}
                                 <a href="javascript:void(0)"
                                    class="note-link"
                                    data-title="{{ task.title }}"
                                    data-note="{{ task.note|escapejs }}">
-                                    {{ task.note|truncatechars:20 }}
+                                    {{ task.note|truncatechars:28 }}
                                 </a>
                             {% else %}
-                                <span style="color:gray;">No note</span>
+                                <span class="muted-text">No note</span>
                             {% endif %}
                         </td>
-                        <td>{{ task.category.name|default:"None" }}</td>
+
+                        <td>
+                            {% with cat=task.category.name|default:"None" %}
+                                {% if cat == "Study" %}
+                                    <span class="category-badge category-badge-study">{{ cat }}</span>
+                                {% elif cat == "Work" %}
+                                    <span class="category-badge category-badge-work">{{ cat }}</span>
+                                {% elif cat == "Life" %}
+                                    <span class="category-badge category-badge-life">{{ cat }}</span>
+                                {% else %}
+                                    <span class="category-badge category-badge-default">{{ cat }}</span>
+                                {% endif %}
+                            {% endwith %}
+                        </td>
+
                         <td>
                             <span class="priority-badge priority-{{ task.priority }}">
                                 {{ task.get_priority_display }}
                             </span>
                         </td>
-                        <td>{{ task.due_date|date:"M d, Y"|default:"None" }}</td>
+
                         <td>
-                            <div class="inline-actions">
+                            <div class="due-cell">
+                                <span class="due-date-text">{{ task.due_date|date:"M d, Y"|default:"None" }}</span>
+
+                                {% if current_period == 'history' %}
+                                    {% if task.history_state == 'completed' %}
+                                        <span class="history-badge history-badge-completed">Completed</span>
+                                    {% elif task.history_state == 'overdue' %}
+                                        <span class="history-badge history-badge-overdue">Overdue</span>
+                                    {% endif %}
+                                {% else %}
+                                    {% if task.due_label %}
+                                        <span class="due-badge due-badge-{{ task.due_state }}">
+                                            {{ task.due_label }}
+                                        </span>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="inline-actions task-actions">
                                 <a href="{% url 'edit_task' task.id %}" class="btn btn-secondary">Edit</a>
-                                <a href="{% url 'delete_task' task.id %}" class="btn btn-danger" onclick="return confirm('Confirm delete?')">Delete</a>
+                                <a href="javascript:void(0);"
+                                   class="btn btn-danger delete-btn"
+                                   data-delete-url="{% url 'delete_task' task.id %}"
+                                   data-task-title="{{ task.title|escapejs }}">
+                                    Delete
+                                </a>
                             </div>
                         </td>
                     </tr>
                 {% endfor %}
             {% else %}
                 <tr>
-                    <td colspan="7" style="text-align:center;">No tasks found in this section.</td>
+                    <td colspan="7" class="empty-cell">No tasks found in this section.</td>
                 </tr>
             {% endif %}
             </tbody>
@@ -140,11 +724,27 @@
     </div>
 </div>
 
-<div id="noteModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.45);">
-    <div style="background:white; width:min(520px,90%); margin:8% auto; padding:24px; border-radius:18px; box-shadow:0 18px 40px rgba(0,0,0,0.18);">
-        <h3 id="modalTitle"></h3>
-        <p id="modalContent" style="white-space: pre-wrap;"></p>
+<div id="noteModal" class="modal-backdrop" style="display:none;">
+    <div class="modal-card note-modal-card">
+        <h3 id="modalTitle" class="modal-title"></h3>
+        <p id="modalContent" class="modal-text"></p>
         <button onclick="closeModal()" class="btn btn-secondary">Close</button>
+    </div>
+</div>
+
+<div id="deleteModal" class="modal-backdrop delete-backdrop" style="display:none;">
+    <div class="modal-card delete-modal-card">
+        <h3 class="modal-title">Delete task?</h3>
+        <p class="modal-text">
+            Are you sure you want to delete
+            <strong id="deleteTaskTitle"></strong>?
+            This action cannot be undone.
+        </p>
+
+        <div class="modal-actions">
+            <button type="button" onclick="closeDeleteModal()" class="btn btn-secondary">Cancel</button>
+            <a id="confirmDeleteBtn" href="#" class="btn btn-danger">Delete</a>
+        </div>
     </div>
 </div>
 
@@ -167,6 +767,21 @@ document.querySelectorAll('.note-link').forEach(link => {
 
 function closeModal() {
     document.getElementById('noteModal').style.display = "none";
+}
+
+document.querySelectorAll('.delete-btn').forEach(button => {
+    button.addEventListener('click', function () {
+        const deleteUrl = this.dataset.deleteUrl;
+        const taskTitle = this.dataset.taskTitle;
+
+        document.getElementById('deleteTaskTitle').innerText = taskTitle;
+        document.getElementById('confirmDeleteBtn').href = deleteUrl;
+        document.getElementById('deleteModal').style.display = 'block';
+    });
+});
+
+function closeDeleteModal() {
+    document.getElementById('deleteModal').style.display = 'none';
 }
 </script>
 {% endblock %}
