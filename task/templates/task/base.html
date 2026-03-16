@@ -57,10 +57,58 @@
         }
 
         .nav-links a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 11px 18px;
+            border-radius: 14px;
             text-decoration: none;
-            color: #1d4ed8;
-            font-weight: 500;
-            font-size: 16px;
+            font-size: 14px;
+            font-weight: 700;
+            border: 1px solid #cfd6e3;
+            background: linear-gradient(180deg, #ffffff 0%, #f3f5fa 100%);
+            color: #111827;
+            box-shadow:
+                0 6px 14px rgba(170, 180, 210, 0.14),
+                0 0 0 1px rgba(255, 255, 255, 0.75) inset;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+        }
+
+        .nav-links a:hover {
+            transform: translateY(-1px);
+            background: linear-gradient(180deg, #ffffff 0%, #e9eef7 100%);
+            border-color: #aeb9cc;
+            box-shadow:
+                0 8px 18px rgba(170, 180, 210, 0.20),
+                0 0 0 1px rgba(255, 255, 255, 0.9) inset;
+        }
+
+        .nav-links a.nav-active {
+            background: linear-gradient(180deg, #58a4ff 0%, #2b61ef 100%);
+            color: #ffffff;
+            border-color: #2b61ef;
+            box-shadow: 0 8px 16px rgba(50, 90, 230, 0.24);
+        }
+
+        .nav-links a.nav-active:hover {
+            box-shadow: 0 10px 20px rgba(50, 90, 230, 0.30);
+        }
+
+        .nav-links a.nav-danger {
+            background: linear-gradient(180deg, #fff4f6 0%, #ffe3e8 100%);
+            color: #c81e3a;
+            border-color: #f3b8c3;
+            box-shadow:
+                0 6px 14px rgba(235, 36, 64, 0.10),
+                0 0 0 1px rgba(255, 255, 255, 0.78) inset;
+        }
+
+        .nav-links a.nav-danger:hover {
+            background: linear-gradient(180deg, #ffeef2 0%, #ffd7df 100%);
+            border-color: #ea9aaa;
+            box-shadow:
+                0 8px 18px rgba(235, 36, 64, 0.16),
+                0 0 0 1px rgba(255, 255, 255, 0.9) inset;
         }
 
         .btn {
@@ -70,11 +118,11 @@
             padding: 11px 18px;
             border-radius: 14px;
             text-decoration: none;
-            border: none;
+            border: 1px solid transparent;
             cursor: pointer;
             font-size: 14px;
             font-weight: 700;
-            transition: transform 0.18s ease, box-shadow 0.18s ease;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background 0.18s ease;
         }
 
         .btn:hover {
@@ -84,19 +132,40 @@
         .btn-primary {
             background: linear-gradient(180deg, #58a4ff 0%, #2b61ef 100%);
             color: white;
+            border-color: #2b61ef;
             box-shadow: 0 8px 16px rgba(50, 90, 230, 0.24);
         }
 
+        .btn-primary:hover {
+            box-shadow: 0 10px 20px rgba(50, 90, 230, 0.30);
+        }
+
         .btn-secondary {
-            background: linear-gradient(180deg, #ffffff 0%, #eef1f8 100%);
+            background: linear-gradient(180deg, #ffffff 0%, #f3f5fa 100%);
             color: #111827;
-            box-shadow: 0 8px 16px rgba(170, 180, 210, 0.18);
+            border: 1px solid #cfd6e3;
+            box-shadow:
+                0 6px 14px rgba(170, 180, 210, 0.14),
+                0 0 0 1px rgba(255, 255, 255, 0.75) inset;
+        }
+
+        .btn-secondary:hover {
+            background: linear-gradient(180deg, #ffffff 0%, #e9eef7 100%);
+            border-color: #aeb9cc;
+            box-shadow:
+                0 8px 18px rgba(170, 180, 210, 0.20),
+                0 0 0 1px rgba(255, 255, 255, 0.9) inset;
         }
 
         .btn-danger {
             background: linear-gradient(180deg, #ff7180 0%, #eb2440 100%);
             color: white;
+            border-color: #e11d48;
             box-shadow: 0 8px 16px rgba(235, 36, 64, 0.24);
+        }
+
+        .btn-danger:hover {
+            box-shadow: 0 10px 20px rgba(235, 36, 64, 0.30);
         }
 
         .task-completed td {
@@ -252,10 +321,13 @@
             width: 100%;
             padding: 12px 14px;
             box-sizing: border-box;
-            border: 1px solid #d9d6de;
+            border: 1px solid #cfd6e3;
             border-radius: 12px;
             font-size: 15px;
-            background: #fffdfd;
+            background: linear-gradient(180deg, #ffffff 0%, #fcfdff 100%);
+            box-shadow:
+                0 3px 8px rgba(170, 180, 210, 0.08),
+                0 0 0 1px rgba(255,255,255,0.75) inset;
         }
 
         textarea {
@@ -337,48 +409,67 @@
                 font-size: 14px;
             }
         }
-</style>
+    </style>
 </head>
 <body>
     <header class="topbar">
         <div class="topbar-inner">
-          <div class="brand" style="display:flex; align-items:center; gap:14px;">
-            <div style="
-                width:54px;
-                height:54px;
-                border-radius:50%;
-                display:flex;
-                align-items:center;
-                justify-content:center;
-                font-size:28px;
-                background:linear-gradient(180deg,#ffe88b,#ffc63d);
-                box-shadow:0 6px 14px rgba(255,200,60,0.30);
-            ">
-                😊
-            </div>
+            <div class="brand" style="display:flex; align-items:center; gap:14px;">
+                <div style="
+                    width:54px;
+                    height:54px;
+                    border-radius:50%;
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                    font-size:28px;
+                    background:linear-gradient(180deg,#ffe88b,#ffc63d);
+                    box-shadow:0 6px 14px rgba(255,200,60,0.30);
+                ">
+                    😊
+                </div>
 
-            <div>
-                <h1 style="margin:0;">SmartPlan</h1>
-                {% if user.is_authenticated %}
-                    <div class="welcome-text">Welcome, {{ user.username }}!</div>
-                {% endif %}
+                <div>
+                    <h1 style="margin:0;">SmartPlan</h1>
+                    {% if user.is_authenticated %}
+                        <div class="welcome-text">Welcome, {{ user.username }}!</div>
+                    {% endif %}
+                </div>
             </div>
-        </div>
 
             <nav class="nav-links" aria-label="Main navigation">
                 {% if user.is_authenticated %}
-                    <a href="{% url 'task_dashboard' %}">Dashboard</a>
-                    <a href="{% url 'stats_page' %}">Statistics</a>
-                    <a href="{% url 'logout' %}">Logout</a>
-                {% else %}
-                    <a href="{% url 'login' %}">Login</a>
-                    <a href="{% url 'register' %}">Register</a>
-                {% endif %}
-                {% if user.is_superuser %}
-                    <a href="/admin/" class="btn btn-secondary">Admin</a>
-                {% endif %}
-{#                <a href="{% url 'create_task' %}" class="btn btn-primary">+ Add Task</a>#}
+                    <a href="{% url 'task_dashboard' %}"
+                       class="{% if request.path == '/' or '/dashboard/' in request.path %}nav-active{% endif %}">
+                        Dashboard
+                    </a>
 
+                    <a href="{% url 'stats_page' %}"
+                       class="{% if '/stats/' in request.path %}nav-active{% endif %}">
+                        Statistics
+                    </a>
+
+                    <a href="{% url 'logout' %}" class="nav-danger">
+                        Logout
+                    </a>
+                {% else %}
+                    <a href="{% url 'login' %}"
+                       class="{% if '/login/' in request.path %}nav-active{% endif %}">
+                        Login
+                    </a>
+
+                    <a href="{% url 'register' %}"
+                       class="{% if '/register/' in request.path %}nav-active{% endif %}">
+                        Register
+                    </a>
+                {% endif %}
+
+                {% if user.is_superuser %}
+                    <a href="/admin/"
+                       class="{% if '/admin/' in request.path %}nav-active{% endif %}">
+                        Admin
+                    </a>
+                {% endif %}
             </nav>
         </div>
     </header>
