@@ -11,7 +11,7 @@
     <header class="topbar">
         <div class="brand">SmartPlan</div>
         <nav class="nav-links">
-            <a href="{% url 'login' %}">Login</a>
+            <a href="{% url 'login' %}" class="active">Login</a>
             <a href="{% url 'register' %}">Register</a>
         </nav>
     </header>
@@ -24,28 +24,46 @@
         <div class="bg-shape star star-right"></div>
 
         <section class="hero">
+            <p class="page-tag">Welcome back</p>
             <h1 class="title-bubble">Login</h1>
             <p class="subtitle">Sign in to access your personal task dashboard.</p>
 
             <div class="login-card">
-                <form method="post">
+                <form method="post" class="auth-form" novalidate>
                     {% csrf_token %}
 
                     {% if form.errors %}
                     <div class="error-message">
-                        Invalid username or password
+                        Invalid username or password. Please try again.
                     </div>
                     {% endif %}
 
-                    <label for="username">Username</label>
-                    <input type="text" id="username" name="username" required>
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input
+                            type="text"
+                            id="username"
+                            name="username"
+                            value="{{ form.username.value|default:'' }}"
+                            placeholder="Enter your username"
+                            required
+                        >
+                    </div>
 
-                    <label for="password">Password</label>
-                    <input type="password" id="password" name="password" required>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            placeholder="Enter your password"
+                            required
+                        >
+                    </div>
 
-                    <div class="button-row">
+                    <div class="button-row single-column">
                         <button type="submit" class="btn btn-primary">Login</button>
-                        <a href="{% url 'register' %}" class="btn btn-secondary">Create account</a>
+                        <a href="{% url 'register' %}" class="text-link">Don’t have an account? Create one</a>
                     </div>
                 </form>
             </div>
