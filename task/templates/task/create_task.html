@@ -1,231 +1,230 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <title>Create Task - SmartPlan</title>
-  <style>
-    * {
-        box-sizing: border-box;
-    }
+{% extends 'task/base.html' %}
 
-    body {
-        margin: 0;
-        font-family: "Trebuchet MS", "Arial Rounded MT Bold", Arial, sans-serif;
-        background: linear-gradient(90deg, #fffafc 0%, #ffd9e6 100%);
-        min-height: 100vh;
-        color: #1f2430;
-    }
+{% block title %}Create Task - SmartPlan{% endblock %}
 
-    .page-shell {
-        max-width: 1100px;
+{% block content %}
+<style>
+    .create-task-shell {
+        max-width: 980px;
         margin: 0 auto;
-        padding: 34px 28px 56px;
     }
 
-    h1 {
-        margin: 0 0 28px;
-        font-size: 64px;
+    .create-task-header {
+        margin-bottom: 24px;
+        text-align: center;
+    }
+
+    .create-task-header h2 {
+        margin: 0 0 10px;
+        font-size: 56px;
         line-height: 1.05;
         font-weight: 900;
         color: #111827;
     }
 
-    form {
-        max-width: 980px;
+    .create-task-header p {
+        margin: 0 auto;
+        max-width: 760px;
+        font-size: 18px;
+        color: #667085;
     }
 
-    .form-group,
-    .mb-3 {
-        margin-bottom: 18px;
+    .create-task-card {
+        background: rgba(255, 255, 255, 0.96);
+        border-radius: 30px;
+        padding: 34px 36px;
+        box-shadow:
+            0 16px 34px rgba(238, 130, 167, 0.10),
+            0 0 0 1px rgba(250, 220, 230, 0.82) inset;
     }
 
-    label,
-    .form-label {
+    .create-task-card .form-group {
+        margin-bottom: 22px;
+    }
+
+    .create-task-card label {
         display: block;
         margin-bottom: 10px;
-        font-size: 18px;
+        font-size: 17px;
         font-weight: 800;
         color: #151b28;
     }
 
-    input,
-    select,
-    textarea {
+    .create-task-card input,
+    .create-task-card select,
+    .create-task-card textarea {
         width: 100%;
-        padding: 14px 16px;
-        border-radius: 14px;
-        border: 1.5px solid #cfc7d5;
-        background: rgba(255, 255, 255, 0.95);
+        padding: 15px 16px;
+        border-radius: 16px;
+        border: 1px solid #cfd6e3;
+        background: linear-gradient(180deg, #ffffff 0%, #fcfdff 100%);
         font-size: 16px;
         box-sizing: border-box;
         box-shadow:
-            inset 0 2px 5px rgba(255,255,255,0.92),
-            0 6px 14px rgba(166, 176, 201, 0.14);
-        transition: border-color 0.18s ease, box-shadow 0.18s ease;
+            0 4px 10px rgba(170, 180, 210, 0.08),
+            0 0 0 1px rgba(255,255,255,0.80) inset;
     }
 
-    input:focus,
-    select:focus,
-    textarea:focus {
-        outline: none;
-        border-color: #f2a4bf;
-        box-shadow:
-            0 0 0 4px rgba(242, 164, 191, 0.18),
-            0 8px 18px rgba(242, 164, 191, 0.12);
-    }
-
-    textarea {
+    .create-task-card textarea {
         resize: vertical;
-        min-height: 110px;
+        min-height: 120px;
     }
 
-    .btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 120px;
-        padding: 12px 18px;
-        border: none;
-        border-radius: 16px;
-        cursor: pointer;
-        text-decoration: none;
-        font-size: 16px;
-        font-weight: 800;
-        color: white;
-        background: linear-gradient(180deg, #58a4ff 0%, #2b61ef 100%);
+    .create-task-card input:focus,
+    .create-task-card select:focus,
+    .create-task-card textarea:focus {
+        outline: none;
+        border-color: #8bb7ff;
         box-shadow:
-            0 10px 18px rgba(46, 99, 239, 0.28),
-            inset 0 2px 6px rgba(255,255,255,0.28);
-        transition: transform 0.18s ease, box-shadow 0.18s ease;
+            0 0 0 4px rgba(88, 164, 255, 0.16),
+            0 8px 18px rgba(88, 164, 255, 0.12);
     }
 
-    .btn:hover {
-        transform: translateY(-1px);
+    .suggestion-row {
+        margin-top: 8px;
     }
 
-    .btn-cancel {
-        background: linear-gradient(180deg, #ffffff 0%, #eef1f8 100%);
-        color: #111827;
-        margin-right: 12px;
-        box-shadow: 0 8px 16px rgba(170, 180, 210, 0.18);
-    }
-
-    .error {
-        margin-bottom: 18px;
+    .suggestion-box {
+        margin-top: 14px;
         padding: 14px 16px;
-        border-radius: 14px;
+        border-radius: 18px;
+        background: linear-gradient(180deg, #f8fbff 0%, #edf4ff 100%);
+        border: 1px solid #d6e5ff;
+        font-size: 15px;
+        line-height: 1.6;
+        color: #21304a;
+        box-shadow: 0 8px 16px rgba(140, 170, 220, 0.12);
+        min-height: 24px;
+    }
+
+    .create-task-actions {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-top: 28px;
+    }
+
+    .create-task-actions .btn {
+        min-width: 132px;
+    }
+
+    .error-list {
+        margin: 0 0 24px;
+        padding: 14px 16px 14px 34px;
+        border-radius: 16px;
         background: #fff1f2;
         border: 1px solid #fecdd3;
         color: #b42318;
     }
 
-    .error ul {
-        margin: 0;
-        padding-left: 20px;
-    }
-
-    #priority-suggestion-result {
-        margin-top: 12px;
-        padding: 14px 16px;
-        border-radius: 16px;
-        background: linear-gradient(180deg, #f8fbff 0%, #edf4ff 100%);
-        border: 1px solid #d6e5ff;
-        font-size: 15px;
-        color: #21304a;
-        box-shadow: 0 8px 16px rgba(140, 170, 220, 0.12);
-        min-height: 26px;
-    }
-
-    .button-row {
-        display: flex;
-        gap: 14px;
-        flex-wrap: wrap;
-        margin-top: 18px;
-    }
-
     @media (max-width: 768px) {
-        .page-shell {
-            padding: 22px 16px 40px;
+        .create-task-header h2 {
+            font-size: 40px;
         }
 
-        h1 {
-            font-size: 42px;
-            margin-bottom: 22px;
+        .create-task-card {
+            padding: 22px 18px;
+            border-radius: 22px;
         }
 
-        .btn,
-        .btn-cancel {
-            width: 100%;
-            margin-right: 0;
-        }
-
-        .button-row {
+        .create-task-actions {
             flex-direction: column;
         }
+
+        .create-task-actions .btn {
+            width: 100%;
+        }
     }
-    </style>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-</head>
-<body>
-    <div class="page-shell">
-        <h1>Create Task</h1>
-    {% if errors %}
-        <div class="error">
-            <ul>
+</style>
+
+<div class="create-task-shell">
+    <div class="create-task-header">
+        <h2>Create Task</h2>
+        <p>Add a new task with details, due date, category, and priority.</p>
+    </div>
+
+    <div class="create-task-card">
+        {% if errors %}
+            <ul class="error-list">
                 {% for error in errors %}
                     <li>{{ error }}</li>
                 {% endfor %}
             </ul>
-        </div>
-    {% endif %}
-    <form method="post">
-        {% csrf_token %}  <!-- Django防跨站请求伪造（CSRF）保护 -->
-        <div class="form-group">
-            <label for="title">Task Title *</label>
-            <input type="text" id="title" name="title" required>
-        </div>
-        <div class="form-group">
-            <label for="description">Task Description</label>
-            <textarea id="description" name="description" rows="3"></textarea>
-        </div>
-        <div class="form-group">
-            <label for="due_date">Due Date</label>
-            <input type="text" id="due_date" name="due_date" placeholder="Select a date">
-        </div>
-        <div class="form-group">
-            <label for="category">Category</label>
-            <select id="category" name="category">
-                <option value="">-- select category --</option>
-                {% for category in categories %}
-                    <option value="{{ category.id }}">{{ category.name }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="form-group">
-            <label for="priority">Priority</label>
-            <select id="priority" name="priority">
-                <option value="high">High</option>
-                <option value="medium" selected>Medium</option>
-                <option value="low">Low</option>
-            </select>
-        </div>
-        <div class="mb-3">
-             <label for="note" class="form-label">Note</label>
-             <textarea name="note" id="note" class="form-control" rows="4"
-              placeholder="Write task plan, steps, or description here..."></textarea>
-        </div>
+        {% endif %}
 
- <!-- AI -->
-        <div class="form-group">
-            <button type="button" class="btn" id="suggest-priority-btn">AI Suggest Priority</button>
-            <p id="priority-suggestion-result"></p>
-        </div>
-        
-        <div class="button-row">
-            <button type="button" class="btn btn-cancel" onclick="window.location.href='{% url 'task_dashboard' %}'">Cancel</button>
-            <button type="submit" class="btn">Save</button>
-        </div>
-    </form>
-<!-- AI JavaScript -->
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="title">Task Title *</label>
+                <input type="text" id="title" name="title" required>
+            </div>
+
+            <div class="form-group">
+                <label for="description">Task Description</label>
+                <textarea id="description" name="description" rows="4"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="due_date">Due Date</label>
+                <input type="text" id="due_date" name="due_date" placeholder="Select a date">
+            </div>
+
+            <div class="form-group">
+                <label for="category">Category</label>
+                <select id="category" name="category">
+                    <option value="">-- select category --</option>
+                    {% for category in categories %}
+                        <option value="{{ category.id }}">{{ category.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="priority">Priority</label>
+                <select id="priority" name="priority">
+                    <option value="high">High</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="low">Low</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="note">Note</label>
+                <textarea
+                    name="note"
+                    id="note"
+                    rows="5"
+                    placeholder="Write task plan, steps, or description here..."
+                ></textarea>
+            </div>
+
+            <div class="form-group suggestion-row">
+                <button type="button" class="btn btn-primary" id="suggest-priority-btn">
+                    Smart Suggest Priority
+                </button>
+
+                <div id="priority-suggestion-result" class="suggestion-box">
+                    <strong>Smart Recommendation: None</strong><br>
+                    No suggestion yet.
+                </div>
+            </div>
+
+            <div class="create-task-actions">
+                <button type="button"
+                        class="btn btn-secondary"
+                        onclick="window.location.href='{% url 'task_dashboard' %}'">
+                    Cancel
+                </button>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
 function getCSRFToken() {
     const cookies = document.cookie.split(';');
@@ -239,11 +238,19 @@ function getCSRFToken() {
 }
 
 document.getElementById("suggest-priority-btn").addEventListener("click", async function () {
-    const title = document.getElementById("title").value;
-    const note = document.getElementById("note").value;
+    const title = document.getElementById("title").value.trim();
+    const note = document.getElementById("note").value.trim();
     const resultBox = document.getElementById("priority-suggestion-result");
 
-    resultBox.textContent = "Generating suggestion...";
+    if (!title && !note) {
+        resultBox.innerHTML = `
+            <strong>Smart Recommendation: None</strong><br>
+            No task title or note has been entered yet. Please add some details before requesting a priority suggestion.
+        `;
+        return;
+    }
+
+    resultBox.textContent = "Smart is reviewing the task title and note to suggest a suitable priority...";
 
     try {
         const response = await fetch("{% url 'suggest_priority' %}", {
@@ -261,25 +268,32 @@ document.getElementById("suggest-priority-btn").addEventListener("click", async 
         const data = await response.json();
 
         if (data.success) {
-            document.getElementById("priority").value = data.priority.toLowerCase();
-            resultBox.textContent = `Suggested priority: ${data.priority}. ${data.reason}`;
+            if (data.priority && data.priority.toLowerCase() !== "none") {
+                document.getElementById("priority").value = data.priority.toLowerCase();
+            }
+
+            const reasonText = data.reason ? data.reason : "No detailed reason was provided.";
+
+            resultBox.innerHTML = `
+                <strong>Smart Recommendation: ${data.priority}</strong><br>
+                ${reasonText}<br><br>
+                ${data.priority && data.priority.toLowerCase() !== "none"
+                    ? "The priority field has been updated automatically. You can still change it manually if needed."
+                    : "Please add more task details if you would like Smart to make a recommendation."}
+            `;
         } else {
-            resultBox.textContent = "Failed to generate suggestion.";
+            resultBox.textContent = "Smart could not generate a suggestion at the moment. Please try again after adding more task details.";
         }
     } catch (error) {
-        resultBox.textContent = "Error while generating suggestion.";
+        resultBox.textContent = "Something went wrong while generating the smart suggestion. Please try again.";
         console.error(error);
     }
 });
+
+flatpickr("#due_date", {
+    dateFormat: "Y-m-d",
+    locale: "default",
+    allowInput: true
+});
 </script>
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-<script>
-    flatpickr("#due_date", {
-        dateFormat: "Y-m-d",
-        locale: "default",
-        allowInput: true
-    });
-</script>
-</div>
-</body>
-</html>
+{% endblock %}
