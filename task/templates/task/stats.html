@@ -3,159 +3,957 @@
 {% block title %}SmartPlan - Statistics{% endblock %}
 
 {% block content %}
+<style>
+    :root {
+        --success: #34c38f;
+        --success-soft: #e4fbf2;
+        --success-border: #bcefdc;
+
+        --danger: #e98a8a;
+        --danger-soft: #f8e8e8;
+        --danger-border: #efc2c2;
+
+        --warning: #e9bf84;
+        --warning-soft: #f8efe3;
+        --warning-border: #edcfab;
+
+        --ink-900: #0f172a;
+        --ink-800: #1e293b;
+        --ink-700: #334155;
+        --ink-600: #475569;
+        --ink-500: #64748b;
+        --ink-400: #94a3b8;
+
+        --panel-bg: #ffffff;
+        --panel-border: #f0dce3;
+
+        /* dashboard-aligned category colors */
+        --cat-study: #5b6ee8;
+        --cat-study-soft: #e8ecff;
+        --cat-study-border: #d5ddff;
+
+        --cat-work: #9462df;
+        --cat-work-soft: #f1e9ff;
+        --cat-work-border: #e3d5ff;
+
+        --cat-life: #2f9fc1;
+        --cat-life-soft: #e4f7fc;
+        --cat-life-border: #cdebf4;
+
+        --pri-high: #a64d79;
+        --pri-high-soft: #f6e4ef;
+        --pri-high-border: #eacfe0;
+
+        --pri-medium: #b07a1a;
+        --pri-medium-soft: #f8edd2;
+        --pri-medium-border: #eddcb3;
+
+        --pri-low: #5f7996;
+        --pri-low-soft: #e8eef6;
+        --pri-low-border: #d5e0eb;
+    }
+
+    body {
+        background: linear-gradient(180deg, #fffafb 0%, #fffdfd 100%);
+    }
+
+    .page-header p {
+        color: var(--ink-500);
+    }
+
+    .stats-filter-card {
+        margin-bottom: 24px;
+        padding: 22px 24px;
+        background: var(--panel-bg);
+        border: 1px solid var(--panel-border);
+        border-radius: 28px;
+        box-shadow: 0 10px 28px rgba(15, 23, 42, 0.03);
+    }
+
+    .stats-filter-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        flex-wrap: wrap;
+    }
+
+    .stats-filter-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .stats-range-note {
+        margin: 0;
+        color: var(--ink-500);
+        font-size: 16px;
+        line-height: 1.6;
+    }
+
+    .stats-range-note strong {
+        color: var(--ink-700);
+        font-weight: 700;
+    }
+
+    .stats-summary-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 22px;
+        margin-bottom: 28px;
+    }
+
+    .summary-link {
+        text-decoration: none;
+        color: inherit;
+        display: block;
+    }
+
+    .stats-summary-card {
+        position: relative;
+        overflow: hidden;
+        border-radius: 24px;
+        padding: 24px 24px 22px;
+        background: #ffffff;
+        border: 1px solid var(--panel-border);
+        box-shadow: 0 10px 26px rgba(15, 23, 42, 0.04);
+        transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .summary-link:hover .stats-summary-card {
+        transform: translateY(-2px);
+        box-shadow: 0 14px 30px rgba(15, 23, 42, 0.07);
+    }
+
+    .stats-summary-card::before {
+        content: "";
+        position: absolute;
+        inset: 0 auto auto 0;
+        width: 100%;
+        height: 6px;
+    }
+
+    .stats-summary-card.total::before {
+        background: linear-gradient(90deg, #9bb8df 0%, #6f97cf 100%);
+    }
+
+    .stats-summary-card.completed::before {
+        background: linear-gradient(90deg, #4fd19e 0%, #28b67f 100%);
+    }
+
+    .stats-summary-card.pending::before {
+        background: linear-gradient(90deg, #efaaaa 0%, #e98a8a 100%);
+    }
+
+    .stats-summary-card.soon::before {
+        background: linear-gradient(90deg, #efd2aa 0%, #e9bf84 100%);
+    }
+
+    .stats-summary-label {
+        margin: 6px 0 12px;
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--ink-500);
+        letter-spacing: -0.01em;
+    }
+
+    .stats-summary-value {
+        margin: 0;
+        font-size: 40px;
+        line-height: 1;
+        font-weight: 800;
+        color: var(--ink-900);
+        letter-spacing: -0.03em;
+    }
+
+    .stats-summary-sub {
+        margin-top: 12px;
+        font-size: 14px;
+        color: #8fa0b6;
+        line-height: 1.55;
+    }
+
+    .stats-chart-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+    }
+
+    .stats-chart-card {
+        padding: 28px 30px;
+        border-radius: 28px;
+        background: #ffffff;
+        border: 1px solid var(--panel-border);
+        box-shadow: 0 10px 28px rgba(15, 23, 42, 0.04);
+    }
+
+    .stats-card-title {
+        margin: 0;
+        font-size: 22px;
+        font-weight: 800;
+        color: var(--ink-900);
+        letter-spacing: -0.02em;
+    }
+
+    .stats-card-subtitle {
+        margin: 8px 0 0;
+        font-size: 14px;
+        color: var(--ink-500);
+        line-height: 1.55;
+    }
+
+    .panel-layout {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 28px;
+        margin-top: 28px;
+    }
+
+    .panel-visual {
+        width: 280px;
+        min-width: 280px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .panel-info {
+        flex: 1;
+        min-width: 280px;
+    }
+
+    /* status chart */
+    .status-chart {
+        width: 250px;
+        height: 250px;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        gap: 28px;
+    }
+
+    .status-link {
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 64px;
+    }
+
+    .status-link:hover .status-bar {
+        transform: translateY(-4px);
+        box-shadow: 0 14px 24px rgba(15, 23, 42, 0.12);
+    }
+
+    .status-bar-wrap {
+        height: 190px;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+    }
+
+    .status-bar {
+        width: 54px;
+        border-radius: 18px 18px 0 0;
+        box-shadow: 0 10px 20px rgba(15, 23, 42, 0.08);
+        transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .status-bar.completed {
+        background: linear-gradient(180deg, #5dd6a5 0%, var(--success) 100%);
+    }
+
+    .status-bar.pending {
+        background: linear-gradient(180deg, #efaaaa 0%, var(--danger) 100%);
+    }
+
+    .status-bar.soon {
+        background: linear-gradient(180deg, #efd2aa 0%, var(--warning) 100%);
+    }
+
+    .status-bar-label {
+        margin-top: 12px;
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--ink-800);
+        text-align: center;
+        line-height: 1.3;
+    }
+
+    .status-bar-count {
+        margin-top: 4px;
+        font-size: 14px;
+        color: var(--ink-500);
+        line-height: 1.3;
+        text-align: center;
+    }
+
+    /* unified legend cards */
+    .legend-links {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .legend-link {
+        display: block;
+        text-decoration: none;
+        color: inherit;
+        border-radius: 16px;
+        transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .legend-link:hover {
+        transform: translateX(2px);
+    }
+
+    .legend-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 12px 14px;
+        border-radius: 16px;
+        border: 1px solid transparent;
+    }
+
+    .legend-link:hover .legend-row {
+        box-shadow: 0 8px 18px rgba(15, 23, 42, 0.05);
+    }
+
+    .legend-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+    }
+
+    .legend-dot {
+        width: 16px;
+        height: 16px;
+        border-radius: 5px;
+        flex-shrink: 0;
+    }
+
+    .legend-dot.completed {
+        background: var(--success);
+    }
+
+    .legend-dot.pending {
+        background: var(--danger);
+    }
+
+    .legend-dot.soon {
+        background: var(--warning);
+    }
+
+    .legend-dot.study {
+        background: var(--cat-study);
+    }
+
+    .legend-dot.work {
+        background: var(--cat-work);
+    }
+
+    .legend-dot.life {
+        background: var(--cat-life);
+    }
+
+    .legend-link.completed .legend-row {
+        background: linear-gradient(180deg, #e8fbf3 0%, #def8ee 100%);
+        border-color: #c7efdf;
+    }
+
+    .legend-link.pending .legend-row {
+        background: linear-gradient(180deg, #fdecec 0%, #fae3e3 100%);
+        border-color: #f3cccc;
+    }
+
+    .legend-link.soon .legend-row {
+        background: linear-gradient(180deg, #fbf1e2 0%, #f8ecd8 100%);
+        border-color: #edd5ad;
+    }
+
+    .legend-link.study .legend-row {
+        background: linear-gradient(180deg, var(--cat-study-soft) 0%, #dfe5ff 100%);
+        border-color: var(--cat-study-border);
+    }
+
+    .legend-link.work .legend-row {
+        background: linear-gradient(180deg, var(--cat-work-soft) 0%, #eadfff 100%);
+        border-color: var(--cat-work-border);
+    }
+
+    .legend-link.life .legend-row {
+        background: linear-gradient(180deg, var(--cat-life-soft) 0%, #d8f2f9 100%);
+        border-color: var(--cat-life-border);
+    }
+
+    .legend-label {
+        font-size: 17px;
+        font-weight: 800;
+        color: var(--ink-800);
+    }
+
+    .legend-value {
+        font-size: 17px;
+        font-weight: 800;
+        color: var(--ink-900);
+    }
+
+    .info-panel {
+        margin-top: 20px;
+        padding: 16px 18px;
+        background: linear-gradient(180deg, #fcfdff 0%, #f8fafc 100%);
+        border-radius: 16px;
+        border: 1px solid #e8edf3;
+    }
+
+    .info-panel-label {
+        margin: 0;
+        color: var(--ink-500);
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    .info-panel-value {
+        margin: 6px 0 0;
+        font-size: 18px;
+        font-weight: 800;
+        color: var(--ink-900);
+        line-height: 1.4;
+    }
+
+    /* category layout */
+    .category-layout {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: 34px;
+        align-items: center;
+        margin-top: 28px;
+    }
+
+    .category-donut-wrap {
+        position: relative;
+        width: 250px;
+        height: 250px;
+        margin: 0 auto;
+    }
+
+    .category-donut-base {
+        position: absolute;
+        inset: 0;
+        width: 250px;
+        height: 250px;
+        border-radius: 50%;
+        background: #f8fafc;
+        box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08);
+    }
+
+    .category-donut-svg {
+        position: absolute;
+        inset: 0;
+        transform: rotate(-90deg);
+        overflow: visible;
+    }
+
+    .category-donut-track {
+        fill: none;
+        stroke: #eef2f7;
+        stroke-width: 52;
+    }
+
+    .category-donut-segment {
+        fill: none;
+        stroke-width: 52;
+        stroke-linecap: butt;
+        cursor: pointer;
+        pointer-events: stroke;
+        transition: opacity 0.18s ease, filter 0.18s ease;
+        paint-order: stroke;
+        stroke-linejoin: round;
+    }
+
+    .category-donut-segment:hover {
+        opacity: 0.9;
+        filter: brightness(0.98);
+    }
+
+    .study-segment {
+        stroke: var(--cat-study);
+    }
+
+    .work-segment {
+        stroke: var(--cat-work);
+    }
+
+    .life-segment {
+        stroke: var(--cat-life);
+    }
+
+    .donut-divider {
+        fill: none;
+        stroke: #ffffff;
+        stroke-width: 54;
+        stroke-linecap: butt;
+        pointer-events: none;
+    }
+
+    .donut-inner {
+        position: absolute;
+        width: 112px;
+        height: 112px;
+        background: #ffffff;
+        border-radius: 50%;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        text-align: center;
+        box-shadow: inset 0 0 0 1px #e7edf5;
+        z-index: 2;
+        pointer-events: none;
+    }
+
+    .donut-inner span {
+        font-size: 14px;
+        color: var(--ink-500);
+        line-height: 1.2;
+    }
+
+    .donut-inner strong {
+        margin-top: 4px;
+        font-size: 20px;
+        color: var(--ink-900);
+        line-height: 1.1;
+    }
+
+    .category-side {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+    }
+
+    .priority-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-top: 2px;
+    }
+
+    .priority-card-link {
+        text-decoration: none;
+        color: inherit;
+        display: block;
+    }
+
+    .priority-card {
+        border-radius: 18px;
+        padding: 16px 16px 14px;
+        border: 1px solid transparent;
+        transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .priority-card-link:hover .priority-card {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
+    }
+
+    .priority-card.high {
+        background: var(--pri-high-soft);
+        border-color: var(--pri-high-border);
+    }
+
+    .priority-card.medium {
+        background: var(--pri-medium-soft);
+        border-color: var(--pri-medium-border);
+    }
+
+    .priority-card.low {
+        background: var(--pri-low-soft);
+        border-color: var(--pri-low-border);
+    }
+
+    .priority-card-label {
+        font-size: 13px;
+        font-weight: 800;
+        margin-bottom: 8px;
+    }
+
+    .priority-card.high .priority-card-label,
+    .priority-card.high .priority-card-value {
+        color: var(--pri-high);
+    }
+
+    .priority-card.medium .priority-card-label,
+    .priority-card.medium .priority-card-value {
+        color: var(--pri-medium);
+    }
+
+    .priority-card.low .priority-card-label,
+    .priority-card.low .priority-card-value {
+        color: var(--pri-low);
+    }
+
+    .priority-card-value {
+        font-size: 20px;
+        font-weight: 800;
+        line-height: 1;
+    }
+
+    @media (max-width: 1200px) {
+        .stats-summary-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 1100px) {
+        .stats-chart-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .panel-layout {
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .panel-visual {
+            min-width: 100%;
+        }
+
+        .panel-info {
+            width: 100%;
+        }
+
+        .category-layout {
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .stats-summary-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .stats-filter-card,
+        .stats-chart-card,
+        .stats-summary-card {
+            padding-left: 18px;
+            padding-right: 18px;
+        }
+
+        .stats-summary-value {
+            font-size: 32px;
+        }
+
+        .stats-card-title {
+            font-size: 20px;
+        }
+
+        .status-chart {
+            width: 220px;
+            gap: 18px;
+        }
+
+        .status-bar {
+            width: 44px;
+        }
+
+        .category-donut-wrap,
+        .category-donut-base {
+            width: 220px;
+            height: 220px;
+        }
+
+        .priority-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
 <div class="page-header">
     <h2>Statistics</h2>
-    <p>Track task statistics based on due dates across different time ranges.</p>
+    <p>Track task statistics with a color system that matches your task status logic.</p>
 </div>
 
-<div class="content-card" style="margin-bottom:24px;">
-    <div class="inline-actions" style="margin-bottom:20px;">
-        <a href="?range=week"
-           class="btn {% if range_filter == 'week' %}btn-primary{% else %}btn-secondary{% endif %}">
-            This Week
-        </a>
+<div class="content-card stats-filter-card">
+    <div class="stats-filter-top">
+        <div class="stats-filter-actions">
+            <a href="?range=week"
+               class="btn {% if range_filter == 'week' %}btn-primary{% else %}btn-secondary{% endif %}">
+                This Week
+            </a>
 
-        <a href="?range=month"
-           class="btn {% if range_filter == 'month' %}btn-primary{% else %}btn-secondary{% endif %}">
-            This Month
-        </a>
+            <a href="?range=month"
+               class="btn {% if range_filter == 'month' %}btn-primary{% else %}btn-secondary{% endif %}">
+                This Month
+            </a>
 
-        <a href="?range=all"
-           class="btn {% if range_filter == 'all' %}btn-primary{% else %}btn-secondary{% endif %}">
-            All Time
-        </a>
-    </div>
+            <a href="?range=all"
+               class="btn {% if range_filter == 'all' %}btn-primary{% else %}btn-secondary{% endif %}">
+                All Time
+            </a>
+        </div>
 
-    <p style="margin:0; color:#6b7280;">
-        Showing statistics for: <strong>{{ range_label }}</strong>
-    </p>
-</div>
-
-<div class="stats">
-    <div class="stat-card" style="border-top: 5px solid #3b82f6;">
-        <h3>Total Tasks</h3>
-        <p>{{ total_tasks }}</p>
-    </div>
-    <div class="stat-card" style="border-top: 5px solid #10b981;">
-        <h3>Completed Tasks</h3>
-        <p>{{ completed_tasks }}</p>
-    </div>
-    <div class="stat-card" style="border-top: 5px solid #f59e0b;">
-        <h3>Completion Rate</h3>
-        <p>{{ completion_rate }}%</p>
+        <p class="stats-range-note">
+            Showing statistics for: <strong>{{ range_label }}</strong>
+        </p>
     </div>
 </div>
 
-<div style="display:grid; grid-template-columns: 1fr 1fr; gap:24px;">
-    <!-- Donut Chart -->
-    <div class="content-card">
-        <h3 style="margin-top:0;">Task Completion Status</h3>
+<div class="stats-summary-grid">
+    <a class="summary-link" href="{% url 'task_dashboard' %}?period=all">
+        <div class="stats-summary-card total">
+            <p class="stats-summary-label">Total Tasks</p>
+            <p class="stats-summary-value">{{ total_tasks }}</p>
+            <div class="stats-summary-sub">All tasks in the selected range</div>
+        </div>
+    </a>
 
-        <div style="display:flex; align-items:center; justify-content:space-between; gap:24px; flex-wrap:wrap; margin-top:16px;">
-            <div
-                style="
-                    width:240px;
-                    height:240px;
-                    border-radius:50%;
-                    background:
-                        conic-gradient(
-                            #10b981 0% {{ completed_pct }}%,
-                            #ef4444 {{ completed_pct }}% 100%
-                        );
-                    position:relative;
-                    margin:10px auto;
-                    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-                ">
-                <div
-                    style="
-                        position:absolute;
-                        width:110px;
-                        height:110px;
-                        background:#ffffff;
-                        border-radius:50%;
-                        top:50%;
-                        left:50%;
-                        transform:translate(-50%, -50%);
-                        display:flex;
-                        align-items:center;
-                        justify-content:center;
-                        flex-direction:column;
-                        text-align:center;
-                    ">
-                    <span style="font-size:14px; color:#6b7280;">Done</span>
-                    <strong style="font-size:22px; color:#111827;">{{ completion_rate }}%</strong>
+    <a class="summary-link" href="{% url 'task_dashboard' %}?status=completed&period=all">
+        <div class="stats-summary-card completed">
+            <p class="stats-summary-label">Completed</p>
+            <p class="stats-summary-value">{{ completed_tasks }}</p>
+            <div class="stats-summary-sub">Finished tasks shown in green</div>
+        </div>
+    </a>
+
+    <a class="summary-link" href="{% url 'task_dashboard' %}?status=pending&period=all">
+        <div class="stats-summary-card pending">
+            <p class="stats-summary-label">Pending</p>
+            <p class="stats-summary-value">{{ incomplete_tasks }}</p>
+            <div class="stats-summary-sub">Unfinished tasks shown in red</div>
+        </div>
+    </a>
+
+    <a class="summary-link" href="{% url 'task_dashboard' %}?status=soon&period=all">
+        <div class="stats-summary-card soon">
+            <p class="stats-summary-label">Due Soon</p>
+            <p class="stats-summary-value">{{ due_soon_tasks|default:0 }}</p>
+            <div class="stats-summary-sub">Upcoming urgent tasks shown in orange</div>
+        </div>
+    </a>
+</div>
+
+<div class="stats-chart-grid">
+    <div class="stats-chart-card">
+        <h3 class="stats-card-title">Task Status Overview</h3>
+        <p class="stats-card-subtitle">Click each bar or legend item to open the matching tasks.</p>
+
+        <div class="panel-layout">
+            <div class="panel-visual">
+                <div class="status-chart">
+                    <a class="status-link" href="{% url 'task_dashboard' %}?status=completed&period=all">
+                        <div class="status-bar-wrap">
+                            <div
+                                class="status-bar completed"
+                                style="height:{% if max_status_count > 0 %}{{ completed_bar_pct }}{% else %}0{% endif %}%; min-height:{% if completed_tasks > 0 %}24px{% else %}0{% endif %};">
+                            </div>
+                        </div>
+                        <div class="status-bar-label">Completed</div>
+                        <div class="status-bar-count">{{ completed_tasks }} tasks</div>
+                    </a>
+
+                    <a class="status-link" href="{% url 'task_dashboard' %}?status=pending&period=all">
+                        <div class="status-bar-wrap">
+                            <div
+                                class="status-bar pending"
+                                style="height:{% if max_status_count > 0 %}{{ pending_bar_pct }}{% else %}0{% endif %}%; min-height:{% if incomplete_tasks > 0 %}24px{% else %}0{% endif %};">
+                            </div>
+                        </div>
+                        <div class="status-bar-label">Pending</div>
+                        <div class="status-bar-count">{{ incomplete_tasks }} tasks</div>
+                    </a>
+
+                    <a class="status-link" href="{% url 'task_dashboard' %}?status=soon&period=all">
+                        <div class="status-bar-wrap">
+                            <div
+                                class="status-bar soon"
+                                style="height:{% if max_status_count > 0 %}{{ soon_bar_pct }}{% else %}0{% endif %}%; min-height:{% if due_soon_tasks > 0 %}24px{% else %}0{% endif %};">
+                            </div>
+                        </div>
+                        <div class="status-bar-label">Due Soon</div>
+                        <div class="status-bar-count">{{ due_soon_tasks }} tasks</div>
+                    </a>
                 </div>
             </div>
 
-            <div style="flex:1; min-width:200px;">
-                <div style="display:flex; align-items:center; margin-bottom:16px; font-size:18px;">
-                    <span style="display:inline-block; width:18px; height:18px; background:#10b981; border-radius:4px; margin-right:12px;"></span>
-                    <span><strong>Completed:</strong> {{ completed_tasks }}</span>
+            <div class="panel-info">
+                <div class="legend-links">
+                    <a class="legend-link completed" href="{% url 'task_dashboard' %}?status=completed&period=all">
+                        <div class="legend-row">
+                            <div class="legend-left">
+                                <span class="legend-dot completed"></span>
+                                <span class="legend-label">Completed</span>
+                            </div>
+                            <span class="legend-value">{{ completed_tasks }}</span>
+                        </div>
+                    </a>
+
+                    <a class="legend-link pending" href="{% url 'task_dashboard' %}?status=pending&period=all">
+                        <div class="legend-row">
+                            <div class="legend-left">
+                                <span class="legend-dot pending"></span>
+                                <span class="legend-label">Pending</span>
+                            </div>
+                            <span class="legend-value">{{ incomplete_tasks }}</span>
+                        </div>
+                    </a>
+
+                    <a class="legend-link soon" href="{% url 'task_dashboard' %}?status=soon&period=all">
+                        <div class="legend-row">
+                            <div class="legend-left">
+                                <span class="legend-dot soon"></span>
+                                <span class="legend-label">Due Soon</span>
+                            </div>
+                            <span class="legend-value">{{ due_soon_tasks }}</span>
+                        </div>
+                    </a>
                 </div>
 
-                <div style="display:flex; align-items:center; margin-bottom:16px; font-size:18px;">
-                    <span style="display:inline-block; width:18px; height:18px; background:#ef4444; border-radius:4px; margin-right:12px;"></span>
-                    <span><strong>Pending:</strong> {{ incomplete_tasks }}</span>
-                </div>
-
-                <div style="margin-top:18px; padding:14px 16px; background:#f9fafb; border-radius:12px; border:1px solid #e5e7eb;">
-                    <p style="margin:0; color:#6b7280; font-size:14px;">Completion overview</p>
-                    <p style="margin:6px 0 0; font-size:20px; font-weight:700;">{{ completed_tasks }} / {{ total_tasks }} tasks done</p>
+                <div class="info-panel">
+                    <p class="info-panel-label">Completion overview</p>
+                    <p class="info-panel-value">{{ completed_tasks }} / {{ total_tasks }} tasks done</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Colorful Bar Chart -->
-    <div class="content-card">
-        <h3 style="margin-top:0;">Task Category Distribution</h3>
+    <div class="stats-chart-card">
+        <h3 class="stats-card-title">Task Category Distribution</h3>
+        <p class="stats-card-subtitle">Click the donut slices, legend items, or priority cards to open matching tasks.</p>
 
-        <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:24px; height:290px; margin-top:20px;">
-            {% for stat in category_stats %}
-            <div style="flex:1; text-align:center;">
-                <div style="height:200px; display:flex; align-items:flex-end; justify-content:center;">
-                    <div
-                        title="{{ stat.name }}: {{ stat.count }} tasks"
-                        style="
-                            width:80px;
-                            height:{% if stat.height_pct > 0 %}{{ stat.height_pct }}{% else %}0{% endif %}%;
-                            min-height:{% if stat.count > 0 %}22px{% else %}0{% endif %};
-                            {% if stat.name == 'Study' %}
-                                background: linear-gradient(180deg, #60a5fa 0%, #2563eb 100%);
-                            {% elif stat.name == 'Work' %}
-                                background: linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%);
-                            {% elif stat.name == 'Life' %}
-                                background: linear-gradient(180deg, #34d399 0%, #10b981 100%);
-                            {% else %}
-                                background: linear-gradient(180deg, #c084fc 0%, #8b5cf6 100%);
-                            {% endif %}
-                            border-radius: 14px 14px 0 0;
-                            box-shadow: 0 8px 18px rgba(0,0,0,0.10);
-                            transition: transform 0.2s ease;
-                        "
-                        onmouseover="this.style.transform='translateY(-4px)'"
-                        onmouseout="this.style.transform='translateY(0)'">
+        <div class="category-layout">
+            <div class="panel-visual">
+                <div class="category-donut-wrap">
+                    <div class="category-donut-base"></div>
+
+                    <svg class="category-donut-svg" width="250" height="250" viewBox="0 0 250 250">
+                        <circle class="category-donut-track" cx="125" cy="125" r="78"></circle>
+
+                        {% if study_len > 0 %}
+                        <a xlink:href="{% url 'task_dashboard' %}?category=Study&period=all">
+                            <circle
+                                class="category-donut-segment study-segment"
+                                cx="125"
+                                cy="125"
+                                r="78"
+                                stroke-dasharray="{{ study_len }} 490.09"
+                                stroke-dashoffset="{{ study_offset }}">
+                            </circle>
+                        </a>
+                        {% endif %}
+
+                        {% if work_len > 0 %}
+                        <a xlink:href="{% url 'task_dashboard' %}?category=Work&period=all">
+                            <circle
+                                class="category-donut-segment work-segment"
+                                cx="125"
+                                cy="125"
+                                r="78"
+                                stroke-dasharray="{{ work_len }} 490.09"
+                                stroke-dashoffset="{{ work_offset }}">
+                            </circle>
+                        </a>
+                        {% endif %}
+
+                        {% if life_len > 0 %}
+                        <a xlink:href="{% url 'task_dashboard' %}?category=Life&period=all">
+                            <circle
+                                class="category-donut-segment life-segment"
+                                cx="125"
+                                cy="125"
+                                r="78"
+                                stroke-dasharray="{{ life_len }} 490.09"
+                                stroke-dashoffset="{{ life_offset }}">
+                            </circle>
+                        </a>
+                        {% endif %}
+
+                        {% if study_len > 0 and work_len > 0 %}
+                        <circle class="donut-divider" cx="125" cy="125" r="78"
+                                stroke-dasharray="2 488.09"
+                                stroke-dashoffset="{{ work_offset }}">
+                        </circle>
+                        {% endif %}
+
+                        {% if life_len > 0 %}
+                        <circle class="donut-divider" cx="125" cy="125" r="78"
+                                stroke-dasharray="2 488.09"
+                                stroke-dashoffset="{{ life_offset }}">
+                        </circle>
+                        {% endif %}
+                    </svg>
+
+                    <div class="donut-inner">
+                        <span>Categories</span>
+                        <strong>{{ total_tasks }}</strong>
                     </div>
                 </div>
+            </div>
 
-                <div style="margin-top:12px; font-weight:700; font-size:18px;">{{ stat.name }}</div>
-                <div style="color:#6b7280; font-size:15px;">{{ stat.count }} tasks</div>
-            </div>
-            {% endfor %}
-        </div>
+            <div class="category-side">
+                <div class="legend-links">
+                    <a class="legend-link study" href="{% url 'task_dashboard' %}?category=Study&period=all">
+                        <div class="legend-row">
+                            <div class="legend-left">
+                                <span class="legend-dot study"></span>
+                                <span class="legend-label">Study</span>
+                            </div>
+                            <span class="legend-value">{{ study_count|default:0 }}</span>
+                        </div>
+                    </a>
 
-        <div style="display:flex; gap:20px; flex-wrap:wrap; margin-top:24px; font-size:15px;">
-            <div style="display:flex; align-items:center;">
-                <span style="width:16px; height:16px; background:#2563eb; border-radius:4px; display:inline-block; margin-right:8px;"></span>
-                Study
-            </div>
-            <div style="display:flex; align-items:center;">
-                <span style="width:16px; height:16px; background:#f59e0b; border-radius:4px; display:inline-block; margin-right:8px;"></span>
-                Work
-            </div>
-            <div style="display:flex; align-items:center;">
-                <span style="width:16px; height:16px; background:#10b981; border-radius:4px; display:inline-block; margin-right:8px;"></span>
-                Life
+                    <a class="legend-link work" href="{% url 'task_dashboard' %}?category=Work&period=all">
+                        <div class="legend-row">
+                            <div class="legend-left">
+                                <span class="legend-dot work"></span>
+                                <span class="legend-label">Work</span>
+                            </div>
+                            <span class="legend-value">{{ work_count|default:0 }}</span>
+                        </div>
+                    </a>
+
+                    <a class="legend-link life" href="{% url 'task_dashboard' %}?category=Life&period=all">
+                        <div class="legend-row">
+                            <div class="legend-left">
+                                <span class="legend-dot life"></span>
+                                <span class="legend-label">Life</span>
+                            </div>
+                            <span class="legend-value">{{ life_count|default:0 }}</span>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="priority-grid">
+                    <a class="priority-card-link" href="{% url 'task_dashboard' %}?priority=high&sort=priority&period=all">
+                        <div class="priority-card high">
+                            <div class="priority-card-label">High</div>
+                            <div class="priority-card-value">{{ high_priority_count|default:0 }}</div>
+                        </div>
+                    </a>
+
+                    <a class="priority-card-link" href="{% url 'task_dashboard' %}?priority=medium&sort=priority&period=all">
+                        <div class="priority-card medium">
+                            <div class="priority-card-label">Medium</div>
+                            <div class="priority-card-value">{{ medium_priority_count|default:0 }}</div>
+                        </div>
+                    </a>
+
+                    <a class="priority-card-link" href="{% url 'task_dashboard' %}?priority=low&sort=priority&period=all">
+                        <div class="priority-card low">
+                            <div class="priority-card-label">Low</div>
+                            <div class="priority-card-value">{{ low_priority_count|default:0 }}</div>
+                        </div>
+                    </a>
+                </div>
             </div>
         </div>
     </div>
