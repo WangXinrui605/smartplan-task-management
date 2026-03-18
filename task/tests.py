@@ -3,7 +3,8 @@ from django.contrib.auth.models import User
 from django.urls import reverse
 from .models import Task, Category
 
-
+# Unit tests for Task model and dashboard view
+# Ensures core functionality behaves as expected
 class TaskModelTest(TestCase):
 
     def setUp(self):

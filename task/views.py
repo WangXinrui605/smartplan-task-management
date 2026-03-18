@@ -53,6 +53,8 @@ def get_current_user(request):
     return User.objects.get(username='testuser')
 
 
+# Main dashboard view for displaying and managing user tasks
+# Supports filtering, searching, and sorting via GET parameters
 @login_required
 def task_dashboard(request):
     user = request.user
@@ -64,8 +66,9 @@ def task_dashboard(request):
     category_filter = request.GET.get('category', '').strip()
     priority_filter = request.GET.get('priority', '').strip().lower()
 
-    tasks = Task.objects.filter(user=user)
+    tasks = Task.objects.filter(user=user)# Ensure users can only access their own tasks (data isolation)
 
+# Allow flexible search across title and description fields
     if query:
         tasks = tasks.filter(
             Q(title__icontains=query) | Q(description__icontains=query)
@@ -73,7 +76,7 @@ def task_dashboard(request):
 
     today = timezone.localdate()
     soon_limit = today + timedelta(days=3)
-
+# Filter tasks based on time period to improve task organisation
     if period == 'today':
         tasks = tasks.filter(due_date=today, status=False)
         period_title = 'Today'
@@ -107,6 +110,8 @@ def task_dashboard(request):
     if category_filter:
         tasks = tasks.filter(category__name=category_filter)
 
+# Custom ordering is used to prioritise high-priority tasks first
+# since priority is stored as text instead of numeric value
     if priority_filter in ['high', 'medium', 'low']:
         tasks = tasks.filter(priority=priority_filter)
 
@@ -125,6 +130,8 @@ def task_dashboard(request):
     else:
         tasks = tasks.order_by('status', 'due_date', '-created_at')
 
+# Compute additional display properties (not stored in DB)
+# to simplify template logic and improve readability
     display_tasks = []
     for task in tasks:
         due_state = ''
@@ -179,7 +186,8 @@ def task_dashboard(request):
     }
     return render(request, 'task/dashboard.html', context)
 
-
+# Generate task statistics for visualisation (charts and summaries)
+# Includes completion rate, category distribution, and priority breakdown
 @login_required
 def stats_page(request):
     user = request.user
@@ -289,7 +297,8 @@ def stats_page(request):
     }
     return render(request, 'task/stats.html', context)
 
-
+# Handle task creation with basic validation
+# Validation ensures meaningful data and prevents invalid dates
 @login_required
 def create_task(request):
     user = request.user
@@ -350,6 +359,7 @@ def edit_task(request, task_id):
             errors.append('Task title cannot be empty.')
 
         # Editing is allowed even if the task is already overdue.
+        # Allow users to update overdue tasks to maintain flexibility
         # Only validate the field format indirectly by saving the submitted value.
 
         if not errors:
@@ -401,7 +411,9 @@ def toggle_task_status(request, task_id):
 
     return redirect('task_dashboard')
 
-
+# Simple rule-based priority suggestion system
+# Uses keyword matching instead of ML to keep implementation lightweight
+# and interpretable for users
 @require_POST
 @login_required
 def suggest_priority(request):
@@ -418,6 +430,7 @@ def suggest_priority(request):
                 "reason": "No task title or note has been entered yet, so Smart cannot estimate the urgency level."
             })
 
+# Keywords are grouped by urgency level to estimate task importance
         high_keywords = [
             "urgent", "asap", "immediately", "right now", "today", "tonight",
             "deadline", "due", "exam", "interview", "submission", "submit",
